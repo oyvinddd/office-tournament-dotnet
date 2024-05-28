@@ -1,0 +1,6 @@
+@office_tournament_api_HostAddress = http://localhost:5153
+
+GET {{office_tournament_api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

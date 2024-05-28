@@ -105,11 +105,23 @@ RESPONSE BODY:
 
 ### User 1
 
+{
+    "id": "43c9f799-55c1-45e6-ab25-1df1f55cd9cb",
+    "email": "user@test1.com",
+    "username": "user1"
+}
+
 The "sub" claim contains the user ID.
 
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0M2M5Zjc5OS01NWMxLTQ1ZTYtYWIyNS0xZGYxZjU1Y2Q5Y2IiLCJpYXQiOjE1MTYyMzkwMjJ9.nsJkcfkjt_9wOvzJd5ZMEOHGIyqrZ8tShQZIVbUxExg 
 
 ### User 2
+
+{
+    "id": "8f2902ab-a646-4fac-a9e3-e33d2283f5d8",
+    "email": "user@test2.com",
+    "username": "user2"
+}
 
 The "sub" claim contains the user ID.
 

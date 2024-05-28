@@ -99,3 +99,18 @@ RESPONSE BODY:
 * loser_id (GUID): the id of the loser
 * loser_delta_score: integer, how many points the loser lost
 * date: unix timestamp of when the match was registered
+
+## Example users
+
+### User 1
+
+The "sub" claim contains the user ID.
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0M2M5Zjc5OS01NWMxLTQ1ZTYtYWIyNS0xZGYxZjU1Y2Q5Y2IiLCJpYXQiOjE1MTYyMzkwMjJ9.nsJkcfkjt_9wOvzJd5ZMEOHGIyqrZ8tShQZIVbUxExg 
+
+### User 2
+
+The "sub" claim contains the user ID.
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4ZjI5MDJhYi1hNjQ2LTRmYWMtYTllMy1lMzNkMjI4M2Y1ZDgiLCJpYXQiOjE1MTYyMzkwMjJ9.HhA7T5nAfQCIgJKhkgPBM_U8SwP48JRhdps0675wwxY
+

@@ -18,10 +18,22 @@ TODO: ...
 
 A given account can only have one active tournament at a time.
 
+### Create tournament
+
+```
+[POST] /api/v1/tournaments
+
+BODY:
+{
+    "title": "Tietoevry Ping Pong",
+    "reset_interval": 0
+}
+```
+
 ### Join tournament
 
 ```
-[POST] /api/v1/tournaments/join
+[PUT] /api/v1/tournaments/join
 ```
 
 ### Get tournament
@@ -33,7 +45,7 @@ A given account can only have one active tournament at a time.
 ### Leave tournament
 
 ```
-[POST] /api/v1/tournaments/leave
+[PUT] /api/v1/tournaments/leave
 ```
 
 ### Register match
@@ -53,6 +65,7 @@ A given account can only have one active tournament at a time.
 * score: integer, default = 1600, ELO-based score
 * matches_won: integer, default = 0
 * matches_played: integer, default = 0
+* created_at: unix timestamp
 
 ### Tournament table
 

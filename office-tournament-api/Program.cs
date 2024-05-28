@@ -24,6 +24,7 @@ namespace office_tournament_api
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

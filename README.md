@@ -16,6 +16,8 @@ TODO: ...
 
 ## Tournaments
 
+A given account can only have one active tournament at a time.
+
 ### Join tournament
 
 ```
@@ -61,4 +63,9 @@ TODO: ...
 
 ### Match table
 
-TODO: ...
+* id (GUID): primary key
+* winner_id (GUID): the id of the winner
+* winner_delta_score: integer, how many points the winner got
+* loser_id (GUID): the id of the loser
+* loser_delta_score: integer, how many points the loser lost
+* date: unix timestamp of when the match was registered

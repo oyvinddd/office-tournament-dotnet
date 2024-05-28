@@ -40,6 +40,23 @@ BODY:
 
 ```
 [GET] /api/v1/tournaments
+
+RESPONSE BODY:
+
+{
+    "id": "the_guid",
+    "title": "the_title",
+    "scoreboard": [
+        {
+            "id": "the_player_id",
+            "username": "the_player_username",
+            "score": 0,
+            "mathes_player": 12,
+            "matches_won": 10
+        },
+        ...
+    ]
+}
 ```
 
 ### Leave tournament

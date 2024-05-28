@@ -51,7 +51,7 @@ RESPONSE BODY:
             "id": "the_player_id",
             "username": "the_player_username",
             "score": 0,
-            "mathes_player": 12,
+            "matches_played": 12,
             "matches_won": 10
         },
         ...

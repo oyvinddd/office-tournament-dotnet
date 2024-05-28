@@ -23,7 +23,7 @@ A given account can only have one active tournament at a time.
 ```
 [POST] /api/v1/tournaments
 
-BODY:
+REQUEST BODY:
 {
     "title": "Tietoevry Ping Pong",
     "reset_interval": 0

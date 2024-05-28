@@ -94,6 +94,7 @@ RESPONSE BODY:
 ### Match table
 
 * id (GUID): primary key
+* tournament_id (GUID): foreign key
 * winner_id (GUID): the id of the winner
 * winner_delta_score: integer, how many points the winner got
 * loser_id (GUID): the id of the loser

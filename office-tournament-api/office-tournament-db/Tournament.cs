@@ -7,12 +7,14 @@ namespace office_tournament_api.office_tournament_db
     {
         public Guid Id { get; set; }
         [ForeignKey(nameof(AdminId))]
-        public Account Admin {  get; set; }
-        public Guid AdminId { get; set; }
+        public Account? Admin {  get; set; }
+        public Guid? AdminId { get; set; }
         [MaxLength(50)]
         public string Title { get; set; }
         public int ResetInterval { get; set; }
         [MaxLength(6)]
         public string Code { get; set; }
+        public IList<Account> Participants { get; set; }
+        public IList<Match> Matches { get; set; }
     }
 }

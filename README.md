@@ -33,7 +33,12 @@ REQUEST BODY:
 ### Join tournament
 
 ```
-[PUT] /api/v1/tournaments/join
+[PUT] /api/v1/tournaments/join/{tournament_id}
+
+REQUEST BODY:
+{
+    "code": "the_code"
+}
 ```
 
 ### Get tournament
@@ -90,6 +95,7 @@ RESPONSE BODY:
 * admin_id (GUID): foreign key
 * title: the tournament title
 * reset_interval: integer (0 = monthly, 1 = weekly, 2 = yearly, 3 = never)
+* code: string, 6 alphanumeric randomly generated characters (A-Z, a-z, 0-9)
 
 ### Match table
 

@@ -1,6 +1,6 @@
 ﻿namespace office_tournament_api.DTOs
 {
-    public class DTOPlayerJoinRequest
+    public class DTOAccountJoinRequest
     {
         public string Code { get; set; }
         public Guid AccountId { get; set; }

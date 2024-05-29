@@ -48,7 +48,7 @@ namespace office_tournament_api.Migrations
                     b.Property<int>("Score")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("TournamentId")
+                    b.Property<Guid?>("TournamentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserName")
@@ -131,8 +131,7 @@ namespace office_tournament_api.Migrations
                     b.HasOne("office_tournament_api.office_tournament_db.Tournament", "Tournament")
                         .WithMany("Participants")
                         .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Tournament");
                 });

@@ -17,7 +17,13 @@ namespace office_tournament_api.Controllers
             _context = context;
         }
 
-        [HttpPut("{tournamentId}")]
+        /// <summary>
+        /// Add an Account to a Tournament
+        /// </summary>
+        /// <param name="tournamentId"></param>
+        /// <param name="joinInfo"></param>
+        /// <returns></returns>
+        [HttpPut("join/{tournamentId}")]
         public async Task<ActionResult> JoinTournament(Guid tournamentId, DTOAccountJoinRequest joinInfo)
         {
             try
@@ -61,6 +67,11 @@ namespace office_tournament_api.Controllers
             }
         }
 
+        /// <summary>
+        /// Creates a new Tournament
+        /// </summary>
+        /// <param name="dtoTournament"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult> CreateTournament(DTOTournamentRequest dtoTournament)
         {

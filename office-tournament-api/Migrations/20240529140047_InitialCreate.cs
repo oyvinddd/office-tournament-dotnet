@@ -16,7 +16,7 @@ namespace office_tournament_api.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     AdminTournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),

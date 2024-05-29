@@ -12,7 +12,7 @@ using office_tournament_api.office_tournament_db;
 namespace office_tournament_api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240529121721_InitialCreate")]
+    [Migration("20240529140047_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -51,7 +51,7 @@ namespace office_tournament_api.Migrations
                     b.Property<int>("Score")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("TournamentId")
+                    b.Property<Guid?>("TournamentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserName")
@@ -134,8 +134,7 @@ namespace office_tournament_api.Migrations
                     b.HasOne("office_tournament_api.office_tournament_db.Tournament", "Tournament")
                         .WithMany("Participants")
                         .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Tournament");
                 });

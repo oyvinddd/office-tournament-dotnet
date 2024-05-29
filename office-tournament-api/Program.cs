@@ -21,6 +21,7 @@ namespace office_tournament_api
             });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
+            var skipAuthorization = builder.Configuration.GetSection("SkipAuthorization").Value;
             builder.Services.AddSwaggerGen(options =>
             {
                 var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -28,6 +29,33 @@ namespace office_tournament_api
 
                 options.SwaggerDoc("v1", new OpenApiInfo
                 { Title = "OfficeTournamentApi", Version = "v1" });
+
+                if (skipAuthorization == null || skipAuthorization.ToLower() != "true")
+                {
+                    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                    {
+                        In = ParameterLocation.Header,
+                        Description = "Please enter token",
+                        Name = "Authorization",
+                        Type = SecuritySchemeType.Http,
+                        BearerFormat = "JWT",
+                        Scheme = "bearer"
+                    });
+                    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+               {
+                   {
+                       new OpenApiSecurityScheme
+                           {
+                               Reference = new OpenApiReference
+                                   {
+                                       Type=ReferenceType.SecurityScheme,
+                                       Id="Bearer"
+                                   }
+                           },
+                           new string[]{}
+                   }
+               });
+                }
             });
 
             var app = builder.Build();
@@ -40,6 +68,10 @@ namespace office_tournament_api
             }
 
             app.UseHttpsRedirection();
+            app.UseCors(x => x.AllowAnyHeader()
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithOrigins("*"));
             app.UseAuthentication();
 
             app.UseAuthorization();

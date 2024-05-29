@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
+using System.Net.Http;
 
 namespace office_tournament_api.Controllers
 {
@@ -28,6 +29,14 @@ namespace office_tournament_api.Controllers
         {
             try
             {
+                Guid? accountId = TokenHandler.GetIdFromToken(HttpContext);
+
+                if(accountId == null)
+                {
+                    string error = "There was an error parsing AccountId from token";
+                    return BadRequest(error);
+                }
+
                 Tournament? tournament = await _context.Tournaments
                     .Include(x => x.Participants)
                     .Where(x => x.Id == tournamentId)
@@ -39,11 +48,11 @@ namespace office_tournament_api.Controllers
                     return NotFound(error);
                 }
 
-                Account? account = await _context.Accounts.FindAsync(joinInfo.AccountId);
+                Account? account = await _context.Accounts.FindAsync(accountId);
 
                 if (account == null)
                 {
-                    string error = $"Account with id = {joinInfo.AccountId} was not found";
+                    string error = $"Account with id = {accountId} was not found";
                     return NotFound(error);
                 }
 
@@ -57,7 +66,7 @@ namespace office_tournament_api.Controllers
 
                 await _context.SaveChangesAsync();
 
-                string response = $"Account with id = {joinInfo.AccountId} joined Tournament with id = {tournamentId}";
+                string response = $"Account with id = {accountId} joined Tournament with id = {tournamentId}";
                 return Ok(response);
             }
             catch (Exception ex)

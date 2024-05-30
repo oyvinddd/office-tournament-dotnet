@@ -87,6 +87,61 @@ namespace office_tournament_api.Services
             return tournamentResult;
         }
 
+        public async Task<TournamentResult> LeaveTournament(HttpContext httpContext, Guid tournamentId)
+        {
+            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
+            Guid? accountId = TokenHandler.GetIdFromToken(httpContext);
+
+            if (accountId == null)
+            {
+                string error = "There was an error parsing AccountId from token";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+            }
+
+            Tournament? tournament = await _context.Tournaments
+                .Include(x => x.Participants)
+                .Where(x => x.Id == tournamentId)
+                .FirstOrDefaultAsync();
+
+            if (tournament == null)
+            {
+                string error = $"Tournament with id = {tournamentId} was not found";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+            }
+
+            Account? account = await _context.Accounts.FindAsync(accountId);
+
+            if (account == null)
+            {
+                string error = $"Account with id = {accountId} was not found";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+            }
+
+            if (!tournamentResult.IsValid)
+                return tournamentResult;
+
+            try
+            {
+                account.Tournament = null;
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                string error = $"There was an error when trying to remove Account with id = {accountId} from Tournament with id = {tournamentId}. Message: {e.Message}. " +
+                    $"InnerException: {e.InnerException}";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+            }
+
+            string successMessage = $"Account with id = {accountId} left Tournament with id = {tournamentId}";
+            tournamentResult.SucessMessage = successMessage;
+
+            return tournamentResult;
+        } 
+
         public async Task<TournamentResult> CreateTournament(DTOTournamentRequest dtoTournament)
         {
             CodeBuilder codeBuilder = new CodeBuilder();

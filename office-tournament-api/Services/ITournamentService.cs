@@ -8,6 +8,7 @@ namespace office_tournament_api.Services
     {
         Task<Tournament> GetTournament(Guid id);
         Task<TournamentResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo);
+        Task<TournamentResult> LeaveTournament(HttpContext httpContext, Guid tournamentId);
         Task<TournamentResult> CreateTournament(DTOTournamentRequest dtoTournament);
     }
 }

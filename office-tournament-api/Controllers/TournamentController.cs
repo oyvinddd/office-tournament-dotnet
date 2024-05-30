@@ -15,12 +15,10 @@ namespace office_tournament_api.Controllers
     [ApiController]
     public class TournamentController : ControllerBase
     {
-        private readonly DataContext _context;
         private readonly ITournamentService _tournamentService;
         private readonly DTOMapper _dtoMapper;
         public TournamentController(DataContext context, ITournamentService tournamentService, DTOMapper dtoMapper)
         {
-            _context = context;
             _tournamentService = tournamentService;
             _dtoMapper = dtoMapper;
         }
@@ -40,6 +38,31 @@ namespace office_tournament_api.Controllers
 
                 DTOTournamentResponse dtoTournament = _dtoMapper.TournamentDbToDto(tournament);
                 return Ok(dtoTournament);
+            }
+            catch (Exception ex)
+            {
+                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
+        }
+
+        /// <summary>
+        /// Add an Account to a Tournament
+        /// </summary>
+        /// <param name="tournamentId"></param>
+        /// <param name="joinInfo"></param>
+        /// <returns></returns>
+        [HttpPut("leave/{tournamentId}")]
+        public async Task<ActionResult> LeaveTournament(Guid tournamentId)
+        {
+            try
+            {
+                TournamentResult tournamentResult = await _tournamentService.LeaveTournament(HttpContext, tournamentId);
+
+                if (tournamentResult == null)
+                    return BadRequest(tournamentResult.Errors);
+
+                return Ok(tournamentResult.SucessMessage);
             }
             catch (Exception ex)
             {

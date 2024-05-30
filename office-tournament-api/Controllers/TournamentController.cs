@@ -7,6 +7,7 @@ using office_tournament_api.office_tournament_db;
 using office_tournament_api.Services;
 using office_tournament_api.Validators;
 using System.Net.Http;
+using System.Runtime;
 
 namespace office_tournament_api.Controllers
 {
@@ -16,14 +17,36 @@ namespace office_tournament_api.Controllers
     {
         private readonly DataContext _context;
         private readonly ITournamentService _tournamentService;
-        public TournamentController(DataContext context, ITournamentService tournamentService)
+        private readonly DTOMapper _dtoMapper;
+        public TournamentController(DataContext context, ITournamentService tournamentService, DTOMapper dtoMapper)
         {
             _context = context;
             _tournamentService = tournamentService;
+            _dtoMapper = dtoMapper;
         }
 
         [HttpGet("{id}")]
-        public async Task<Tournament>
+        public async Task<ActionResult<Tournament>> GetTournament(Guid id)
+        {
+            try
+            {
+                Tournament? tournament = await _tournamentService.GetTournament(id);
+
+                if(tournament == null)
+                {
+                    string error = $"Tournament with id = {id} was not found";
+                    return NotFound(error);
+                }
+
+                DTOTournamentResponse dtoTournament = _dtoMapper.TournamentDbToDto(tournament);
+                return Ok(dtoTournament);
+            }
+            catch (Exception ex)
+            {
+                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
+        }
 
         /// <summary>
         /// Add an Account to a Tournament
@@ -65,8 +88,7 @@ namespace office_tournament_api.Controllers
                 if(!tournamentResult.IsValid)
                     return BadRequest(tournamentResult.Errors);
 
-                string response = "A new Tournament was created";
-                return Created("CreateTournament", response);
+                return Created("CreateTournament", tournamentResult.SucessMessage);
             }
             catch (Exception ex)
             {

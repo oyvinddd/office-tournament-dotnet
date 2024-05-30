@@ -16,9 +16,19 @@ namespace office_tournament_api.Services
             _context = context;
         }
 
+        public async Task<Tournament?> GetTournament(Guid id)
+        {
+            Tournament? tournament = await _context.Tournaments
+                .Include(x => x.Participants.OrderByDescending(x => x.Score))
+                .Where(x => x.Id == id)
+                .FirstOrDefaultAsync();
+
+            return tournament;
+        }
+
         public async Task<TournamentResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo)
         {
-            TournamentResult tournamentResult = new TournamentResult(true, new List<string>());
+            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
             Guid? accountId = TokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
@@ -73,14 +83,14 @@ namespace office_tournament_api.Services
             }
 
             string successMessage = $"Account with id = {accountId} joined Tournament with id = {tournamentId}";
-            tournamentResult.SucessMessage = success;
+            tournamentResult.SucessMessage = successMessage;
             return tournamentResult;
         }
 
         public async Task<TournamentResult> CreateTournament(DTOTournamentRequest dtoTournament)
         {
             CodeBuilder codeBuilder = new CodeBuilder();
-            var tournamentResult = new TournamentResult(true, new List<string>());
+            var tournamentResult = new TournamentResult(true, new List<string>(), "");
 
             try
             {
@@ -99,6 +109,8 @@ namespace office_tournament_api.Services
                 tournamentResult.Errors.Add(error);
             }
 
+            string success = "A new Tournament was created";
+            tournamentResult.SucessMessage = success;
             return tournamentResult;
         }
     }

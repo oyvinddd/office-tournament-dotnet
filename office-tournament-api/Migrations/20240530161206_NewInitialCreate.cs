@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace office_tournament_api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class NewInitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,7 @@ namespace office_tournament_api.Migrations
                     AdminTournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Score = table.Column<int>(type: "int", nullable: false),
+                    Score = table.Column<float>(type: "real", nullable: false),
                     MatchesWon = table.Column<int>(type: "int", nullable: false),
                     MatchesPlayed = table.Column<int>(type: "int", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -57,8 +57,9 @@ namespace office_tournament_api.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     WinnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WinnerDeltaScore = table.Column<float>(type: "real", nullable: false),
                     LoserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LoserDeltaScore = table.Column<int>(type: "int", nullable: false),
+                    LoserDeltaScore = table.Column<float>(type: "real", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -82,9 +83,21 @@ namespace office_tournament_api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Accounts_Email",
+                table: "Accounts",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Accounts_TournamentId",
                 table: "Accounts",
                 column: "TournamentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Accounts_UserName",
+                table: "Accounts",
+                column: "UserName",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Matches_LoserId",

@@ -4,7 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
+using office_tournament_api.Services;
+using office_tournament_api.Validators;
 using System.Net.Http;
+using System.Runtime;
 
 namespace office_tournament_api.Controllers
 {
@@ -12,10 +15,60 @@ namespace office_tournament_api.Controllers
     [ApiController]
     public class TournamentController : ControllerBase
     {
-        private readonly DataContext _context;
-        public TournamentController(DataContext context)
+        private readonly ITournamentService _tournamentService;
+        private readonly DTOMapper _dtoMapper;
+        public TournamentController(DataContext context, ITournamentService tournamentService, DTOMapper dtoMapper)
         {
-            _context = context;
+            _tournamentService = tournamentService;
+            _dtoMapper = dtoMapper;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Tournament>> GetTournament(Guid id)
+        {
+            try
+            {
+                Tournament? tournament = await _tournamentService.GetTournament(id);
+
+                if(tournament == null)
+                {
+                    string error = $"Tournament with id = {id} was not found";
+                    return NotFound(error);
+                }
+
+                DTOTournamentResponse dtoTournament = _dtoMapper.TournamentDbToDto(tournament);
+                return Ok(dtoTournament);
+            }
+            catch (Exception ex)
+            {
+                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
+        }
+
+        /// <summary>
+        /// Add an Account to a Tournament
+        /// </summary>
+        /// <param name="tournamentId"></param>
+        /// <param name="joinInfo"></param>
+        /// <returns></returns>
+        [HttpPut("leave/{tournamentId}")]
+        public async Task<ActionResult> LeaveTournament(Guid tournamentId)
+        {
+            try
+            {
+                TournamentResult tournamentResult = await _tournamentService.LeaveTournament(HttpContext, tournamentId);
+
+                if (tournamentResult == null)
+                    return BadRequest(tournamentResult.Errors);
+
+                return Ok(tournamentResult.SucessMessage);
+            }
+            catch (Exception ex)
+            {
+                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
         }
 
         /// <summary>
@@ -29,45 +82,12 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                Guid? accountId = TokenHandler.GetIdFromToken(HttpContext);
+                TournamentResult tournamentResult = await _tournamentService.JoinTournament(HttpContext, tournamentId, joinInfo);
 
-                if(accountId == null)
-                {
-                    string error = "There was an error parsing AccountId from token";
-                    return BadRequest(error);
-                }
+                if (tournamentResult == null)
+                    return BadRequest(tournamentResult.Errors);
 
-                Tournament? tournament = await _context.Tournaments
-                    .Include(x => x.Participants)
-                    .Where(x => x.Id == tournamentId)
-                    .FirstOrDefaultAsync();
-
-                if (tournament == null)
-                {
-                    string error = $"Tournament with id = {tournamentId} was not found";
-                    return NotFound(error);
-                }
-
-                Account? account = await _context.Accounts.FindAsync(accountId);
-
-                if (account == null)
-                {
-                    string error = $"Account with id = {accountId} was not found";
-                    return NotFound(error);
-                }
-
-                if (!tournament.Code.Equals(joinInfo.Code))
-                {
-                    string error = $"Code supplied doest not match code of Tournament with id = {tournamentId}";
-                    return BadRequest(error);
-                }
-
-                account.Tournament = tournament;
-
-                await _context.SaveChangesAsync();
-
-                string response = $"Account with id = {accountId} joined Tournament with id = {tournamentId}";
-                return Ok(response);
+                return Ok(tournamentResult.SucessMessage);
             }
             catch (Exception ex)
             {
@@ -82,22 +102,16 @@ namespace office_tournament_api.Controllers
         /// <param name="dtoTournament"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> CreateTournament(DTOTournamentRequest dtoTournament)
+        public async Task<ActionResult<string>> CreateTournament(DTOTournamentRequest dtoTournament)
         {
             try
             {
-                CodeBuilder codeBuilder = new CodeBuilder();
+                TournamentResult tournamentResult = await _tournamentService.CreateTournament(dtoTournament);
 
-                Tournament tournament = new Tournament();
-                tournament.Title = dtoTournament.Title;
-                tournament.ResetInterval = dtoTournament.ResetInterval;
-                tournament.Code = codeBuilder.RandomPassword();
+                if(!tournamentResult.IsValid)
+                    return BadRequest(tournamentResult.Errors);
 
-                await _context.Tournaments.AddAsync(tournament);
-                await _context.SaveChangesAsync();
-
-                string response = "A new Tournament was created";
-                return Created("CreateTournament", response);
+                return Created("CreateTournament", tournamentResult.SucessMessage);
             }
             catch (Exception ex)
             {

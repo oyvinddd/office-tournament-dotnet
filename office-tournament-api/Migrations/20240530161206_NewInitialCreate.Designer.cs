@@ -12,8 +12,8 @@ using office_tournament_api.office_tournament_db;
 namespace office_tournament_api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240529140047_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20240530161206_NewInitialCreate")]
+    partial class NewInitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,8 +48,8 @@ namespace office_tournament_api.Migrations
                     b.Property<int>("MatchesWon")
                         .HasColumnType("int");
 
-                    b.Property<int>("Score")
-                        .HasColumnType("int");
+                    b.Property<float>("Score")
+                        .HasColumnType("real");
 
                     b.Property<Guid?>("TournamentId")
                         .HasColumnType("uniqueidentifier");
@@ -61,7 +61,13 @@ namespace office_tournament_api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.HasIndex("TournamentId");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
                     b.ToTable("Accounts", (string)null);
                 });
@@ -75,14 +81,17 @@ namespace office_tournament_api.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("LoserDeltaScore")
-                        .HasColumnType("int");
+                    b.Property<float>("LoserDeltaScore")
+                        .HasColumnType("real");
 
                     b.Property<Guid>("LoserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("TournamentId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<float>("WinnerDeltaScore")
+                        .HasColumnType("real");
 
                     b.Property<Guid>("WinnerId")
                         .HasColumnType("uniqueidentifier");

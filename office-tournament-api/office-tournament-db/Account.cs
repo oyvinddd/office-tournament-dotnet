@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace office_tournament_api.office_tournament_db
 {
+    [Index(nameof(UserName), IsUnique = true)]
+    [Index(nameof(Email), IsUnique = true)]
     public class Account
     {
         public Guid Id { get; set; }
@@ -16,7 +19,7 @@ namespace office_tournament_api.office_tournament_db
         public string Email { get; set; }
         [MaxLength(50)]
         public string UserName { get; set; }
-        public int Score { get; set; }
+        public float Score { get; set; }
         public int MatchesWon { get; set; }
         public int MatchesPlayed { get; set; }
         public DateTime CreateDate { get; set; }

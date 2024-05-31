@@ -78,6 +78,9 @@ namespace office_tournament_api.Services
                 match.LoserDeltaScore = eloRatingResult.LoserPointsLost;
                 match.Date = DateTime.UtcNow;
 
+                account.Score = eloRatingResult.PlayerANewRating;
+                opponentAccount.Score = eloRatingResult.PlayerBNewRating;
+
                 await _context.Matches.AddAsync(match);
                 await _context.SaveChangesAsync();
             }

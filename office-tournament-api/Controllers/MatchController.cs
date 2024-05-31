@@ -18,7 +18,7 @@ namespace office_tournament_api.Controllers
             _accountService = accountService;
         }
 
-        [HttpPost("{opponentId}")]
+        [HttpPost()]
         public async Task<ActionResult<string>> CreateMatch(DTOMatchRequest dtoMatch)
         {
             try

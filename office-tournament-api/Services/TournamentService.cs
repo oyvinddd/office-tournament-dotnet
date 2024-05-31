@@ -26,9 +26,9 @@ namespace office_tournament_api.Services
             return tournament;
         }
 
-        public async Task<TournamentResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo)
+        public async Task<ValidationResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo)
         {
-            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
+            ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
             Guid? accountId = TokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
@@ -87,9 +87,9 @@ namespace office_tournament_api.Services
             return tournamentResult;
         }
 
-        public async Task<TournamentResult> LeaveTournament(HttpContext httpContext, Guid tournamentId)
+        public async Task<ValidationResult> LeaveTournament(HttpContext httpContext, Guid tournamentId)
         {
-            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
+            ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
             Guid? accountId = TokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
@@ -142,14 +142,25 @@ namespace office_tournament_api.Services
             return tournamentResult;
         } 
 
-        public async Task<TournamentResult> CreateTournament(DTOTournamentRequest dtoTournament)
+        public async Task<ValidationResult> CreateTournament(HttpContext httpContext, DTOTournamentRequest dtoTournament)
         {
+            ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
+            Guid? accountId = TokenHandler.GetIdFromToken(httpContext);
             CodeBuilder codeBuilder = new CodeBuilder();
-            var tournamentResult = new TournamentResult(true, new List<string>(), "");
+            Account? account = await _context.Accounts.FindAsync(accountId);
+
+            if(account == null)
+            {
+                string error = $"Account not found";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+                return tournamentResult;
+            }
 
             try
             {
                 Tournament tournament = new Tournament();
+                tournament.AdminId = accountId;
                 tournament.Title = dtoTournament.Title;
                 tournament.ResetInterval = dtoTournament.ResetInterval;
                 tournament.Code = codeBuilder.RandomPassword();

@@ -22,16 +22,9 @@ namespace office_tournament_api.Helpers
         {
             bool isValid = true;
             var passwordVerificationResult = new PasswordHasher<object?>().VerifyHashedPassword(null, hashedPassword, password);
-            switch (passwordVerificationResult)
-            {
-                case PasswordVerificationResult.Failed:
-                        isValid = false;
-                        break;
 
-                case PasswordVerificationResult.Success:
-                        isValid = true;
-                    break;
-            }
+            if (passwordVerificationResult == PasswordVerificationResult.Failed)
+                isValid = false;
 
             return isValid;
         }

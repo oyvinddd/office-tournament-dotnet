@@ -1,7 +1,11 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using office_tournament_api.DTOs;
+using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
+using office_tournament_api.Services;
+using office_tournament_api.Validators;
 using System.Reflection;
 
 namespace office_tournament_api
@@ -19,6 +23,14 @@ namespace office_tournament_api
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+            builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<ITournamentService, TournamentService>();
+            builder.Services.AddScoped<IAccountValidator, AccountValidator>();
+            builder.Services.AddScoped<IMatchService, MatchService>();
+            builder.Services.AddScoped<PasswordHandler>();
+            builder.Services.AddScoped<DTOMapper>();
+            builder.Services.AddScoped<EloRating>();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             var skipAuthorization = builder.Configuration.GetSection("SkipAuthorization").Value;

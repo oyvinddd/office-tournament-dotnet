@@ -20,13 +20,6 @@ namespace office_tournament_api.office_tournament_db
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
-                .Entity<Tournament>()
-                .ToTable("Tournaments")
-                .HasOne(x => x.Admin)
-                .WithOne(x => x.AdminTournament)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder
                 .Entity<Match>()
                 .ToTable("Matches")
                 .HasOne(x => x.Tournament)
@@ -44,6 +37,10 @@ namespace office_tournament_api.office_tournament_db
                .HasOne(x => x.Loser)
                .WithMany(x => x.MatchLosses)
                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder
+                .Entity<Tournament>()
+                .ToTable("Tournaments");
         }
     }
 }

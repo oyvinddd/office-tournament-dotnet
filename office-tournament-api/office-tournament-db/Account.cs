@@ -23,7 +23,7 @@ namespace office_tournament_api.office_tournament_db
         public float Score { get; set; }
         public int MatchesWon { get; set; }
         public int MatchesPlayed { get; set; }
-        public DateTime CreateDate { get; set; }
+        public DateTime CreatedDate { get; set; }
         public IList<Match> MatchWins { get; set; }
         public IList<Match> MatchLosses { get; set; }
     }

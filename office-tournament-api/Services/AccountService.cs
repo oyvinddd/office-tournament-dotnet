@@ -25,6 +25,9 @@ namespace office_tournament_api.Services
             if (account == null)
                 return null;
 
+            string pw = "Fredrico1";
+            bool isValidPw = _passwordHandler.VerifyPassword(pw, account.Password);
+
             return account;
         } 
 
@@ -32,7 +35,6 @@ namespace office_tournament_api.Services
         {
             Account account = new Account();
             account.TournamentId = dtoAccount.TournamentId;
-            account.AdminTournamentId = dtoAccount.AdminTournamentId;
             account.Email = dtoAccount.Email;
             account.UserName = dtoAccount.UserName;
             account.Password = _passwordHandler.CreatePassword(dtoAccount.Password);
@@ -40,7 +42,7 @@ namespace office_tournament_api.Services
             account.Score = 1600;
             account.MatchesWon = 0;
             account.MatchesPlayed = 0;
-            account.CreateDate = DateTime.UtcNow;
+            account.CreatedDate = DateTime.UtcNow;
 
             AccountResult validationResult = await _accountValidator.IsValidAccount(account);
 

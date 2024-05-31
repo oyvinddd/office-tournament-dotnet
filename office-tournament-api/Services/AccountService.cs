@@ -35,7 +35,7 @@ namespace office_tournament_api.Services
             account.AdminTournamentId = dtoAccount.AdminTournamentId;
             account.Email = dtoAccount.Email;
             account.UserName = dtoAccount.UserName;
-            account.Password = _passwordHandler.HashPassword(dtoAccount.Password);
+            account.Password = _passwordHandler.CreatePassword(dtoAccount.Password);
             account.Email = dtoAccount.Email;
             account.Score = 1600;
             account.MatchesWon = 0;

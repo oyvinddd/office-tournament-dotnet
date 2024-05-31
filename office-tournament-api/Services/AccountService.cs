@@ -1,4 +1,5 @@
 ﻿using office_tournament_api.DTOs;
+using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Validators;
 using System.Security.Principal;
@@ -9,10 +10,12 @@ namespace office_tournament_api.Services
     {
         private readonly DataContext _context;
         private readonly IAccountValidator _accountValidator;
-        public AccountService(DataContext context, IAccountValidator accountValidator) 
+        private readonly PasswordHandler _passwordHandler;
+        public AccountService(DataContext context, IAccountValidator accountValidator, PasswordHandler passwordHandler) 
         {
             _context = context;
             _accountValidator = accountValidator;
+            _passwordHandler = passwordHandler;
         }
 
         public async Task<Account?> GetAccount(Guid id)
@@ -32,6 +35,7 @@ namespace office_tournament_api.Services
             account.AdminTournamentId = dtoAccount.AdminTournamentId;
             account.Email = dtoAccount.Email;
             account.UserName = dtoAccount.UserName;
+            account.Password = _passwordHandler.HashPassword(dtoAccount.Password);
             account.Email = dtoAccount.Email;
             account.Score = 1600;
             account.MatchesWon = 0;

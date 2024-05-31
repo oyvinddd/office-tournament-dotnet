@@ -19,6 +19,7 @@ namespace office_tournament_api.office_tournament_db
         public string Email { get; set; }
         [MaxLength(50)]
         public string UserName { get; set; }
+        public string Password { get; set; }
         public float Score { get; set; }
         public int MatchesWon { get; set; }
         public int MatchesPlayed { get; set; }

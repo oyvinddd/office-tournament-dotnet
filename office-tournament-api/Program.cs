@@ -69,9 +69,10 @@ namespace office_tournament_api
 
             app.UseHttpsRedirection();
             app.UseCors(x => x.AllowAnyHeader()
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .WithOrigins("*"));
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .WithOrigins("*"));
+
             app.UseAuthentication();
 
             app.UseAuthorization();

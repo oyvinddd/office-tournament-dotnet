@@ -2,6 +2,20 @@
 
 ## Auth
 
+### Basic (TEMP)
+
+If a valid username/password combo is found in the Accounts table, we create a JWT token withn the GUID of the account and return it to the user in the response body.
+
+```
+[POST] /api/v1/login
+
+REQUEST BODY:
+{
+    "username": "the_username",
+    "password": "the_password"
+}
+```
+
 ### Sign in with Apple / Google
 
 TODO: ...

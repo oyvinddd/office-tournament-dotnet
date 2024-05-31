@@ -2,9 +2,21 @@
 
 ## Auth
 
+### Registration
+
+```
+[POST] /api/v1/register
+
+REQUEST BODY:
+{
+    "username": "the_username",
+    "password": "the_password"
+}
+```
+
 ### Basic (TEMP)
 
-If a valid username/password combo is found in the Accounts table, we create a JWT token withn the GUID of the account and return it to the user in the response body.
+If a valid username/password combo is found in the Accounts table, we create a JWT token with the GUID of the account and return it to the user in the response body.
 
 ```
 [POST] /api/v1/login

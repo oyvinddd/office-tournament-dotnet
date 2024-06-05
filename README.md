@@ -61,7 +61,7 @@ REQUEST BODY:
 Search for tournaments matching the query parameter. Returns a list of tournaments.
 
 ```
-[POST] /api/v1/tournaments/search/{query}
+[GET] /api/v1/tournaments/search/{query}
 ```
 
 ### Join tournament

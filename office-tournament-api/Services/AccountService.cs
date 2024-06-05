@@ -25,24 +25,20 @@ namespace office_tournament_api.Services
             if (account == null)
                 return null;
 
-            string pw = "Fredrico1";
-            bool isValidPw = _passwordHandler.VerifyPassword(pw, account.Password);
-
             return account;
         } 
 
         public async Task<AccountResult> CreateAccount(DTOAccountRequest dtoAccount)
         {
             Account account = new Account();
-            account.TournamentId = dtoAccount.TournamentId;
             account.Email = dtoAccount.Email;
             account.UserName = dtoAccount.UserName;
             account.Password = _passwordHandler.CreatePassword(dtoAccount.Password);
             account.Email = dtoAccount.Email;
-            account.Score = 1600;
-            account.MatchesWon = 0;
-            account.MatchesPlayed = 0;
+            account.TotalMatchesWon = 0;
+            account.TotalMatchesPlayed = 0;
             account.CreatedDate = DateTime.UtcNow;
+            account.UpdatedDate = DateTime.UtcNow;
 
             AccountResult validationResult = await _accountValidator.IsValidAccount(account);
 

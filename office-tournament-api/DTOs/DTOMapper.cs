@@ -14,32 +14,34 @@ namespace office_tournament_api.DTOs
             dtoTournament.Title = tournament.Title;
 
             if (!tournament.Participants.IsNullOrEmpty())
-                dtoTournament.Accounts = ListAccountDbToDto(tournament.Participants.ToList());
+                dtoTournament.Accounts = (IList<DTOAccountResponse>)ListAccountDbToDto(tournament.Participants.ToList());
 
             return dtoTournament;
         }
 
-        public List<DTOAccountResponse> ListAccountDbToDto(List<Account> accounts)
+        public List<DTOTournamentAccountResponse> ListAccountDbToDto(List<TournamentAccount> accounts)
         {
-            var dtoAccounts = new List<DTOAccountResponse>();
+            var dtoAccounts = new List<DTOTournamentAccountResponse>();
 
             foreach (var account in accounts)
             {
-                DTOAccountResponse dtoAccount = AccountDbToDto(account);
+                DTOTournamentAccountResponse dtoAccount = AccountDbToDto(account);
                 dtoAccounts.Add(dtoAccount);
             }
 
             return dtoAccounts;
         }
 
-        public DTOAccountResponse AccountDbToDto(Account account)
+        public DTOTournamentAccountResponse AccountDbToDto(TournamentAccount tournamentAccount)
         {
-            var dtoAccount = new DTOAccountResponse();
-            dtoAccount.Id = account.Id;
-            dtoAccount.UserName = account.UserName;
-            dtoAccount.Score = account.Score;
-            dtoAccount.MatchesPlayed = account.MatchesPlayed;
-            dtoAccount.MatchesWon = account.MatchesWon;
+            Account account = tournamentAccount.Account;
+
+            var dtoAccount = new DTOTournamentAccountResponse();
+            dtoAccount.Id = tournamentAccount.Id;
+            dtoAccount.UserName = account != null ? account.UserName : "";
+            dtoAccount.Score = tournamentAccount.Score;
+            dtoAccount.MatchesPlayed = tournamentAccount.MatchesPlayed;
+            dtoAccount.MatchesWon = tournamentAccount.MatchesWon;
 
             return dtoAccount;
         }

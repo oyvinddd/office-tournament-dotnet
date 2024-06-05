@@ -45,7 +45,9 @@ namespace office_tournament_api.Services
                 result.Errors.Add(error);
             }
 
-            Account? account = await _context.Accounts.FindAsync(accountId);
+            Account? account = await _context.Accounts
+                .Include(x => x.TournamentAccounts.Where(x => x.AccountId == accountId && x.TournamentId == dtoMatch.TournamentId))
+                .FirstOrDefaultAsync();
 
             if (account == null)
             {
@@ -54,7 +56,19 @@ namespace office_tournament_api.Services
                 result.Errors.Add(error);
             }
 
-            Account? opponentAccount = await _context.Accounts.FindAsync(dtoMatch.OpponentId);
+            TournamentAccount? tournamentAccountUser = account.TournamentAccounts.FirstOrDefault();
+
+            if(tournamentAccountUser == null)
+            {
+                string error = $"TournamentAccount for Account with id = {accountId} and Tournament with id = {dtoMatch.TournamentId} was not found";
+                result.IsValid = false;
+                result.Errors.Add(error);
+            }
+            
+
+            Account? opponentAccount = await _context.Accounts
+                .Include(x => x.TournamentAccounts.Where(x => x.AccountId == dtoMatch.OpponentId && x.TournamentId == dtoMatch.TournamentId))
+                .FirstOrDefaultAsync();
 
             if (account == null)
             {
@@ -63,23 +77,39 @@ namespace office_tournament_api.Services
                 result.Errors.Add(error);
             }
 
+            TournamentAccount? oppTournamentAccount = account.TournamentAccounts.FirstOrDefault();
+
+            if (oppTournamentAccount == null)
+            {
+                string error = $"Opponent TournamentAccount for Account with id = {dtoMatch.OpponentId} and Tournament with id = {dtoMatch.TournamentId} was not found";
+                result.IsValid = false;
+                result.Errors.Add(error);
+            }
+
             if (!result.IsValid)
                 return result;
 
-            EloRatingResult eloRatingResult = _eloRating.CalculateEloRating(account.Score, opponentAccount.Score, true);
+            EloRatingResult eloRatingResult = _eloRating.CalculateEloRating(tournamentAccountUser.Score, oppTournamentAccount.Score, true);
 
             try
             {
                 Match match = new Match();
                 match.Tournament = tournament;
-                match.Winner = account;
-                match.Loser = opponentAccount;
+                match.Winner = tournamentAccountUser;
+                match.Loser = oppTournamentAccount;
                 match.WinnerDeltaScore = eloRatingResult.WinnerPointsWon;
                 match.LoserDeltaScore = eloRatingResult.LoserPointsLost;
                 match.Date = DateTime.UtcNow;
 
-                account.Score = eloRatingResult.PlayerANewRating;
-                opponentAccount.Score = eloRatingResult.PlayerBNewRating;
+                tournamentAccountUser.Score = eloRatingResult.PlayerANewRating;
+                tournamentAccountUser.MatchesWon += 1;
+                tournamentAccountUser.MatchesPlayed += 1;
+                account.TotalMatchesWon += 1;
+                account.TotalMatchesPlayed += 1;
+
+                oppTournamentAccount.Score = eloRatingResult.PlayerBNewRating;
+                oppTournamentAccount.MatchesPlayed += 1;
+                opponentAccount.TotalMatchesPlayed += 1;
 
                 await _context.Matches.AddAsync(match);
                 await _context.SaveChangesAsync();

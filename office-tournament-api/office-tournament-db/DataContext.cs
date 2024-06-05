@@ -8,16 +8,14 @@ namespace office_tournament_api.office_tournament_db
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Match> Matches { get; set; }
+        public DbSet<TournamentAccount> TournamentAccounts { get; set; }
         public DbSet<Tournament> Tournaments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .Entity<Account>()
-                .ToTable("Accounts")
-                .HasOne(x => x.Tournament)
-                .WithMany(x => x.Participants)
-                .OnDelete(DeleteBehavior.NoAction);
+                .ToTable("Accounts");
 
             modelBuilder
                 .Entity<Match>()
@@ -37,6 +35,20 @@ namespace office_tournament_api.office_tournament_db
                .HasOne(x => x.Loser)
                .WithMany(x => x.MatchLosses)
                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder
+                .Entity<TournamentAccount>()
+                .ToTable("TournamentAccounts")
+                .HasOne(x => x.Tournament)
+                .WithMany(x => x.Participants)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder
+                .Entity<TournamentAccount>()
+                .HasOne(x => x.Account)
+                .WithMany(x => x.TournamentAccounts)
+                .OnDelete(DeleteBehavior.NoAction);
+
 
             modelBuilder
                 .Entity<Tournament>()

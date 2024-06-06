@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using office_tournament_api.DTOs;
@@ -10,6 +11,7 @@ namespace office_tournament_api.Controllers
 {
     [Route("matches")]
     [ApiController]
+    [Authorize]
     public class MatchController : ControllerBase
     {
         private readonly DataContext _context;

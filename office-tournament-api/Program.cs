@@ -37,17 +37,6 @@ namespace office_tournament_api
             builder.Services.AddScoped<EloRating>();
             builder.Services.AddScoped<JwtTokenHandler>();
 
-
-            // Configure the default authorization policy
-            builder.Services.AddAuthorization(options =>
-            {
-                options.DefaultPolicy = new AuthorizationPolicyBuilder()
-                        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
-                        .RequireAuthenticatedUser()
-                        .Build();
-
-            });
-
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             var skipAuthorization = builder.Configuration.GetSection("SkipAuthorization").Value;
@@ -71,6 +60,16 @@ namespace office_tournament_api
                     ValidAudience = builder.Configuration["Jwt-Auth:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt-Auth:Issuer"]))
                 };
+            });
+
+            // Configure the default authorization policy
+            builder.Services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+                        .RequireAuthenticatedUser()
+                        .Build();
+
             });
 
             //if(skipAuthorization.ToLower() != "true")

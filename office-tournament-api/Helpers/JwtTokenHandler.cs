@@ -83,7 +83,7 @@ namespace office_tournament_api.Helpers
               claims: new[] {
                     new Claim("sub", account.Id.ToString())
               },
-              expires: DateTime.UtcNow.AddHours(1),
+              expires: DateTime.MaxValue,
               signingCredentials: creds);
 
             string jwtToken = new JwtSecurityTokenHandler().WriteToken(token);

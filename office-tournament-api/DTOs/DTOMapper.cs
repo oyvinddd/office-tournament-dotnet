@@ -14,25 +14,25 @@ namespace office_tournament_api.DTOs
             dtoTournament.Title = tournament.Title;
 
             if (!tournament.Participants.IsNullOrEmpty())
-                dtoTournament.Accounts = (IList<DTOAccountResponse>)ListAccountDbToDto(tournament.Participants.ToList());
+                dtoTournament.Accounts = (IList<DTOAccountResponse>)ListTournamentAccountDbToDto(tournament.Participants.ToList());
 
             return dtoTournament;
         }
 
-        public List<DTOTournamentAccountResponse> ListAccountDbToDto(List<TournamentAccount> accounts)
+        public List<DTOTournamentAccountResponse> ListTournamentAccountDbToDto(List<TournamentAccount> accounts)
         {
             var dtoAccounts = new List<DTOTournamentAccountResponse>();
 
             foreach (var account in accounts)
             {
-                DTOTournamentAccountResponse dtoAccount = AccountDbToDto(account);
+                DTOTournamentAccountResponse dtoAccount = TournamentAccountDbToDto(account);
                 dtoAccounts.Add(dtoAccount);
             }
 
             return dtoAccounts;
         }
 
-        public DTOTournamentAccountResponse AccountDbToDto(TournamentAccount tournamentAccount)
+        public DTOTournamentAccountResponse TournamentAccountDbToDto(TournamentAccount tournamentAccount)
         {
             Account account = tournamentAccount.Account;
 
@@ -42,6 +42,27 @@ namespace office_tournament_api.DTOs
             dtoAccount.Score = tournamentAccount.Score;
             dtoAccount.MatchesPlayed = tournamentAccount.MatchesPlayed;
             dtoAccount.MatchesWon = tournamentAccount.MatchesWon;
+
+            return dtoAccount;
+        }
+
+        public DTOAccountResponse AccountDbToDto(Account account)
+        {
+            var dtoAccount = new DTOAccountResponse();
+            dtoAccount.Id = account.Id;
+            dtoAccount.Email = account.Email;
+            dtoAccount.TotalMatchesWon = account.TotalMatchesWon;
+            dtoAccount.TotalMatchesPlayed = account.TotalMatchesPlayed;
+            dtoAccount.CreatedDate = account.CreatedDate;
+            dtoAccount.UpdatedDate = account.UpdatedDate;
+
+            if(!account.TournamentAccounts.IsNullOrEmpty())
+            {
+                dtoAccount.TournamentAccounts = ListTournamentAccountDbToDto(account.TournamentAccounts.ToList());
+            }else
+            {
+                account.TournamentAccounts = [];
+            }
 
             return dtoAccount;
         }

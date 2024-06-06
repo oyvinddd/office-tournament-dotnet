@@ -18,14 +18,16 @@ namespace office_tournament_api.Controllers
     {
         private readonly DataContext _context;
         private readonly IAccountService _accountService;
-        public AccountController(DataContext context, IAccountService accountService) 
+        private readonly DTOMapper _mapper;
+        public AccountController(DataContext context, IAccountService accountService, DTOMapper mapper) 
         {
             _context = context;
             _accountService = accountService;
+            _mapper = mapper;
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<Account>> Login(DTOAccountLoginRequest accountLogin)
+        public async Task<ActionResult<DTOAccountInfoResponse>> Login(DTOAccountLoginRequest accountLogin)
         {
             try
             {
@@ -33,6 +35,9 @@ namespace office_tournament_api.Controllers
 
                 if (accountResult.Account == null)
                     return NotFound(accountResult.Errors.FirstOrDefault());
+
+                DTOAccountResponse dtoAccount = _mapper.AccountDbToDto(accountResult.Account);
+                var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccount, accountResult.Token);
 
                 return Ok(accountResult.Account);
             }
@@ -76,7 +81,9 @@ namespace office_tournament_api.Controllers
         /// <param name="dtoAccount"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult<string>> CreateAccount(DTOAccountRequest dtoAccount)
+        [ProducesResponseType(typeof(DTOAccountResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<DTOAccountResponse>> CreateAccount(DTOAccountRequest dtoAccount)
         {
             try
             {
@@ -87,8 +94,9 @@ namespace office_tournament_api.Controllers
                     return BadRequest(accountResult.Errors);
                 }
 
-                string response = "A new Account was created";
-                return Created("CreateAccount", response);
+                DTOAccountResponse dtoAccountResponse = _mapper.AccountDbToDto(accountResult.Account);
+                var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccountResponse, accountResult.Token);
+                return Created("CreateAccount", dtoAccountResponse);
             }
             catch (Exception ex)
             {

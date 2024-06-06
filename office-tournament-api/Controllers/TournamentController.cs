@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
@@ -13,6 +14,7 @@ namespace office_tournament_api.Controllers
 {
     [Route("tournaments")]
     [ApiController]
+    [Authorize]
     public class TournamentController : ControllerBase
     {
         private readonly ITournamentService _tournamentService;

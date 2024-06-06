@@ -27,7 +27,7 @@ namespace office_tournament_api.Services
         public async Task<ValidationResult> CreateMatch(HttpContext httpContext, DTOMatchRequest dtoMatch)
         {
             ValidationResult result = new ValidationResult(true, new List<string>(), "");
-            Guid? accountId = TokenHandler.GetIdFromToken(httpContext);
+            Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
             {

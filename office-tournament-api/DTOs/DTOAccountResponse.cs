@@ -4,7 +4,6 @@
     {
         public Guid Id { get; set; }
         public string UserName { get; set; }
-        public float Score { get; set; }
         public int TotalMatchesPlayed { get; set; }
         public int MatchesWon {  get; set; }
     }

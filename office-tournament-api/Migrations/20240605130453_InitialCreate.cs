@@ -12,6 +12,24 @@ namespace office_tournament_api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Accounts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalMatchesWon = table.Column<int>(type: "int", nullable: false),
+                    TotalMatchesPlayed = table.Column<int>(type: "int", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Accounts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Tournaments",
                 columns: table => new
                 {
@@ -27,30 +45,27 @@ namespace office_tournament_api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Accounts",
+                name: "TournamentAccounts",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    AdminTournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Score = table.Column<float>(type: "real", nullable: false),
                     MatchesWon = table.Column<int>(type: "int", nullable: false),
                     MatchesPlayed = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Accounts", x => x.Id);
+                    table.PrimaryKey("PK_TournamentAccounts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Accounts_Tournaments_AdminTournamentId",
-                        column: x => x.AdminTournamentId,
-                        principalTable: "Tournaments",
+                        name: "FK_TournamentAccounts_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Accounts_Tournaments_TournamentId",
+                        name: "FK_TournamentAccounts_Tournaments_TournamentId",
                         column: x => x.TournamentId,
                         principalTable: "Tournaments",
                         principalColumn: "Id");
@@ -72,14 +87,14 @@ namespace office_tournament_api.Migrations
                 {
                     table.PrimaryKey("PK_Matches", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Matches_Accounts_LoserId",
+                        name: "FK_Matches_TournamentAccounts_LoserId",
                         column: x => x.LoserId,
-                        principalTable: "Accounts",
+                        principalTable: "TournamentAccounts",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Matches_Accounts_WinnerId",
+                        name: "FK_Matches_TournamentAccounts_WinnerId",
                         column: x => x.WinnerId,
-                        principalTable: "Accounts",
+                        principalTable: "TournamentAccounts",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Matches_Tournaments_TournamentId",
@@ -89,20 +104,10 @@ namespace office_tournament_api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Accounts_AdminTournamentId",
-                table: "Accounts",
-                column: "AdminTournamentId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Accounts_Email",
                 table: "Accounts",
                 column: "Email",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Accounts_TournamentId",
-                table: "Accounts",
-                column: "TournamentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_UserName",
@@ -124,6 +129,17 @@ namespace office_tournament_api.Migrations
                 name: "IX_Matches_WinnerId",
                 table: "Matches",
                 column: "WinnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TournamentAccounts_AccountId",
+                table: "TournamentAccounts",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TournamentAccounts_TournamentId_AccountId",
+                table: "TournamentAccounts",
+                columns: new[] { "TournamentId", "AccountId" },
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -131,6 +147,9 @@ namespace office_tournament_api.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Matches");
+
+            migrationBuilder.DropTable(
+                name: "TournamentAccounts");
 
             migrationBuilder.DropTable(
                 name: "Accounts");

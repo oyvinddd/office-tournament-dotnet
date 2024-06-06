@@ -1,8 +1,10 @@
-﻿using office_tournament_api.DTOs;
+﻿using Microsoft.EntityFrameworkCore;
+using office_tournament_api.DTOs;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Validators;
 using System.Security.Principal;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace office_tournament_api.Services
 {
@@ -11,11 +13,13 @@ namespace office_tournament_api.Services
         private readonly DataContext _context;
         private readonly IAccountValidator _accountValidator;
         private readonly PasswordHandler _passwordHandler;
-        public AccountService(DataContext context, IAccountValidator accountValidator, PasswordHandler passwordHandler) 
+        private readonly JwtTokenHandler _jwtTokenHandler;
+        public AccountService(DataContext context, IAccountValidator accountValidator, PasswordHandler passwordHandler, JwtTokenHandler jwtTokenHandler) 
         {
             _context = context;
             _accountValidator = accountValidator;
             _passwordHandler = passwordHandler;
+            _jwtTokenHandler = jwtTokenHandler;
         }
 
         public async Task<Account?> GetAccount(Guid id)
@@ -26,6 +30,34 @@ namespace office_tournament_api.Services
                 return null;
 
             return account;
+        } 
+
+        public async Task<AccountResult?> Login(DTOAccountLoginRequest accountLogin)
+        {
+            AccountResult accountResult = new AccountResult(true, new List<string>());
+            Account? account = await _context.Accounts
+                .Include(x => x.TournamentAccounts)
+                .Where(x => x.UserName.Equals(accountLogin.UserName))
+                .FirstOrDefaultAsync();
+
+            if(account == null)
+            {
+                accountResult.Errors.Add($"Account with username '{accountLogin.UserName}' not found");
+                return accountResult;
+            }
+
+            bool isValidPassword = _passwordHandler.VerifyPassword(accountLogin.Password, account.Password);
+
+            if (!isValidPassword)
+            {
+                accountResult.Errors.Add("Password was not valid");
+                return accountResult;
+            }
+
+            accountResult.Account = account;
+            accountResult.Token = _jwtTokenHandler.CreateToken(account);
+
+            return accountResult;
         } 
 
         public async Task<AccountResult> CreateAccount(DTOAccountRequest dtoAccount)
@@ -57,6 +89,8 @@ namespace office_tournament_api.Services
                 validationResult.IsValid = false;
                 validationResult.Errors.Add(e.Message);
             }
+
+            validationResult.Token = _jwtTokenHandler.CreateToken(account);
 
             return validationResult;
         }

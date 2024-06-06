@@ -30,7 +30,7 @@ namespace office_tournament_api.Services
         public async Task<ValidationResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo)
         {
             ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
-            Guid? accountId = TokenHandler.GetIdFromToken(httpContext);
+            Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
             {
@@ -102,7 +102,7 @@ namespace office_tournament_api.Services
         public async Task<ValidationResult> LeaveTournament(HttpContext httpContext, Guid tournamentId)
         {
             ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
-            Guid? accountId = TokenHandler.GetIdFromToken(httpContext);
+            Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
             {
@@ -168,7 +168,7 @@ namespace office_tournament_api.Services
         public async Task<ValidationResult> CreateTournament(HttpContext httpContext, DTOTournamentRequest dtoTournament)
         {
             ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
-            Guid? accountId = TokenHandler.GetIdFromToken(httpContext);
+            Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
             CodeBuilder codeBuilder = new CodeBuilder();
             Account? account = await _context.Accounts.FindAsync(accountId);
 

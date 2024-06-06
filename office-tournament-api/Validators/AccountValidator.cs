@@ -19,13 +19,6 @@ namespace office_tournament_api.Validators
             bool validEmail = IsValidEmail(account.Email);
             bool emailExists = await DoesEmailExist(account.Email);
             bool userNameExists = await DoesUserNameExist(account.UserName);
-            //bool tournamentExists = true;
-            //bool adminTournamentExists = true;
-
-            //if (account.TournamentId != null)
-            //    tournamentExists = await DoesTournamentExist((Guid)account.TournamentId);
-            //if (account.AdminTournamentId != null)
-            //    tournamentExists = await DoesTournamentExist((Guid)account.AdminTournamentId);
 
             if (!validEmail)
             {

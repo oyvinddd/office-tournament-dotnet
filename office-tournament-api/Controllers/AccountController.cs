@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
@@ -23,12 +24,32 @@ namespace office_tournament_api.Controllers
             _accountService = accountService;
         }
 
+        [HttpPost("login")]
+        public async Task<ActionResult<Account>> Login(DTOAccountLoginRequest accountLogin)
+        {
+            try
+            {
+                AccountResult? accountResult = await _accountService.Login(accountLogin);
+
+                if (accountResult.Account == null)
+                    return NotFound(accountResult.Errors.FirstOrDefault());
+
+                return Ok(accountResult.Account);
+            }
+            catch (Exception ex)
+            {
+                string error = $"Login failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
+        } 
+
         /// <summary>
         /// Gets an Account by id
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<Account>> GetAccount(Guid id)
         {
             try

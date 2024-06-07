@@ -58,7 +58,7 @@ namespace office_tournament_api
                     ValidateLifetime = true,
                     ValidIssuer = builder.Configuration["Jwt-Auth:Issuer"],
                     ValidAudience = builder.Configuration["Jwt-Auth:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt-Auth:Issuer"]))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt-Auth:SecretKey"]))
                 };
             });
 

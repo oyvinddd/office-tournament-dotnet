@@ -18,15 +18,31 @@ namespace office_tournament_api.Controllers
     public class TournamentController : ControllerBase
     {
         private readonly ITournamentService _tournamentService;
-        private readonly DTOMapper _dtoMapper;
+        private readonly DTOMapper _mapper;
         public TournamentController(DataContext context, ITournamentService tournamentService, DTOMapper dtoMapper)
         {
             _tournamentService = tournamentService;
-            _dtoMapper = dtoMapper;
+            _mapper = dtoMapper;
+        }
+
+        [HttpGet("search/{query}")]
+        public async Task<ActionResult<List<DTOTournamentResponse>>> SearchTournaments(string query)
+        {
+            try
+            {
+                List<DTOTournamentResponse> dtoTournaments = await _tournamentService.SearchTournaments(query);
+
+                return Ok(dtoTournaments);
+            }
+            catch (Exception ex)
+            {
+                string error = $"SearchTournaments failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Tournament>> GetTournament(Guid id)
+        public async Task<ActionResult<DTOTournamentResponse>> GetTournament(Guid id)
         {
             try
             {
@@ -38,7 +54,7 @@ namespace office_tournament_api.Controllers
                     return NotFound(error);
                 }
 
-                DTOTournamentResponse dtoTournament = _dtoMapper.TournamentDbToDto(tournament);
+                DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournament);
                 return Ok(dtoTournament);
             }
             catch (Exception ex)

@@ -7,6 +7,19 @@ namespace office_tournament_api.DTOs
     {
         public DTOMapper() { }
 
+        public List<DTOTournamentResponse> ListTournamentDbToDto(List<Tournament> tournaments)
+        {
+            var dtoTournaments = new List<DTOTournamentResponse>();
+
+            foreach (var tournament in tournaments)
+            {
+                DTOTournamentResponse dtoTournament = TournamentDbToDto(tournament);
+                dtoTournaments.Add(dtoTournament);
+            }
+
+            return dtoTournaments;
+        }
+
         public DTOTournamentResponse TournamentDbToDto(Tournament tournament)
         {
             var dtoTournament = new DTOTournamentResponse();

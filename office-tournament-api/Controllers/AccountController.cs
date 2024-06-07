@@ -39,7 +39,7 @@ namespace office_tournament_api.Controllers
                 DTOAccountResponse dtoAccount = _mapper.AccountDbToDto(accountResult.Account);
                 var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccount, accountResult.Token);
 
-                return Ok(accountResult.Account);
+                return Ok(dtoAccountInfo);
             }
             catch (Exception ex)
             {
@@ -54,20 +54,23 @@ namespace office_tournament_api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(DTOAccountResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         [Authorize]
-        public async Task<ActionResult<Account>> GetAccount(Guid id)
+        public async Task<ActionResult<DTOAccountResponse>> GetAccount(Guid id)
         {
             try
             {
-                Account? account = await _accountService.GetAccount(id);
+                DTOAccountResponse? dtoAccount = await _accountService.GetAccount(id);
 
-                if(account == null)
+                if(dtoAccount == null)
                 {
                     string error = $"Account with id = {id} was not found";
                     return NotFound(error);
                 }
 
-                return Ok(account);
+                return Ok(dtoAccount);
             }catch (Exception ex)
             {
                 string error = $"GetAccount failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
@@ -81,8 +84,9 @@ namespace office_tournament_api.Controllers
         /// <param name="dtoAccount"></param>
         /// <returns></returns>
         [HttpPost]
-        [ProducesResponseType(typeof(DTOAccountResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(DTOAccountInfoResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOAccountResponse>> CreateAccount(DTOAccountRequest dtoAccount)
         {
             try

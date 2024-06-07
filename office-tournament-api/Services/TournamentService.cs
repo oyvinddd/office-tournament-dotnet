@@ -11,9 +11,21 @@ namespace office_tournament_api.Services
     public class TournamentService : ITournamentService
     {
         private readonly DataContext _context;
-        public TournamentService(DataContext context)
+        private readonly DTOMapper _mapper;
+        public TournamentService(DataContext context, DTOMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
+        }
+
+        public async Task<List<DTOTournamentResponse>> SearchTournaments(string query)
+        {
+            List<Tournament> tournaments = await _context.Tournaments
+                .Where(x => x.Title.Contains(query))
+                .ToListAsync();
+
+            List<DTOTournamentResponse> dtoTournaments = _mapper.ListTournamentDbToDto(tournaments);
+            return dtoTournaments;
         }
 
         public async Task<Tournament?> GetTournament(Guid id)

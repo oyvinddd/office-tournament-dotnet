@@ -14,22 +14,25 @@ namespace office_tournament_api.Services
         private readonly IAccountValidator _accountValidator;
         private readonly PasswordHandler _passwordHandler;
         private readonly JwtTokenHandler _jwtTokenHandler;
-        public AccountService(DataContext context, IAccountValidator accountValidator, PasswordHandler passwordHandler, JwtTokenHandler jwtTokenHandler) 
+        private readonly DTOMapper _mapper;
+        public AccountService(DataContext context, IAccountValidator accountValidator, PasswordHandler passwordHandler, JwtTokenHandler jwtTokenHandler, DTOMapper mapper) 
         {
             _context = context;
             _accountValidator = accountValidator;
             _passwordHandler = passwordHandler;
             _jwtTokenHandler = jwtTokenHandler;
+            _mapper = mapper;   
         }
 
-        public async Task<Account?> GetAccount(Guid id)
+        public async Task<DTOAccountResponse?> GetAccount(Guid id)
         {
             Account? account = await _context.Accounts.FindAsync(id);
 
             if (account == null)
                 return null;
 
-            return account;
+            DTOAccountResponse dtoAccount = _mapper.AccountDbToDto(account);
+            return dtoAccount;
         } 
 
         public async Task<AccountResult?> Login(DTOAccountLoginRequest accountLogin)

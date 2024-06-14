@@ -7,6 +7,19 @@ namespace office_tournament_api.DTOs
     {
         public DTOMapper() { }
 
+        public List<DTOTournamentResponse> ListTournamentDbToDto(List<Tournament> tournaments)
+        {
+            var dtoTournaments = new List<DTOTournamentResponse>();
+
+            foreach (var tournament in tournaments)
+            {
+                DTOTournamentResponse dtoTournament = TournamentDbToDto(tournament);
+                dtoTournaments.Add(dtoTournament);
+            }
+
+            return dtoTournaments;
+        }
+
         public DTOTournamentResponse TournamentDbToDto(Tournament tournament)
         {
             var dtoTournament = new DTOTournamentResponse();
@@ -14,32 +27,55 @@ namespace office_tournament_api.DTOs
             dtoTournament.Title = tournament.Title;
 
             if (!tournament.Participants.IsNullOrEmpty())
-                dtoTournament.Accounts = ListAccountDbToDto(tournament.Participants.ToList());
+                dtoTournament.Accounts = (IList<DTOAccountResponse>)ListTournamentAccountDbToDto(tournament.Participants.ToList());
 
             return dtoTournament;
         }
 
-        public List<DTOAccountResponse> ListAccountDbToDto(List<Account> accounts)
+        public List<DTOTournamentAccountResponse> ListTournamentAccountDbToDto(List<TournamentAccount> accounts)
         {
-            var dtoAccounts = new List<DTOAccountResponse>();
+            var dtoAccounts = new List<DTOTournamentAccountResponse>();
 
             foreach (var account in accounts)
             {
-                DTOAccountResponse dtoAccount = AccountDbToDto(account);
+                DTOTournamentAccountResponse dtoAccount = TournamentAccountDbToDto(account);
                 dtoAccounts.Add(dtoAccount);
             }
 
             return dtoAccounts;
         }
 
+        public DTOTournamentAccountResponse TournamentAccountDbToDto(TournamentAccount tournamentAccount)
+        {
+            Account account = tournamentAccount.Account;
+
+            var dtoAccount = new DTOTournamentAccountResponse();
+            dtoAccount.Id = tournamentAccount.Id;
+            dtoAccount.UserName = account != null ? account.UserName : "";
+            dtoAccount.Score = tournamentAccount.Score;
+            dtoAccount.MatchesPlayed = tournamentAccount.MatchesPlayed;
+            dtoAccount.MatchesWon = tournamentAccount.MatchesWon;
+
+            return dtoAccount;
+        }
+
         public DTOAccountResponse AccountDbToDto(Account account)
         {
             var dtoAccount = new DTOAccountResponse();
             dtoAccount.Id = account.Id;
-            dtoAccount.UserName = account.UserName;
-            dtoAccount.Score = account.Score;
-            dtoAccount.MatchesPlayed = account.MatchesPlayed;
-            dtoAccount.MatchesWon = account.MatchesWon;
+            dtoAccount.Email = account.Email;
+            dtoAccount.TotalMatchesWon = account.TotalMatchesWon;
+            dtoAccount.TotalMatchesPlayed = account.TotalMatchesPlayed;
+            dtoAccount.CreatedDate = account.CreatedDate;
+            dtoAccount.UpdatedDate = account.UpdatedDate;
+
+            if(!account.TournamentAccounts.IsNullOrEmpty())
+            {
+                dtoAccount.TournamentAccounts = ListTournamentAccountDbToDto(account.TournamentAccounts.ToList());
+            }else
+            {
+                account.TournamentAccounts = [];
+            }
 
             return dtoAccount;
         }

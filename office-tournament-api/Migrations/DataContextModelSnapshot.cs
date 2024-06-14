@@ -28,10 +28,7 @@ namespace office_tournament_api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AdminTournamentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreateDate")
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
@@ -39,17 +36,18 @@ namespace office_tournament_api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("MatchesPlayed")
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalMatchesPlayed")
                         .HasColumnType("int");
 
-                    b.Property<int>("MatchesWon")
+                    b.Property<int>("TotalMatchesWon")
                         .HasColumnType("int");
 
-                    b.Property<float>("Score")
-                        .HasColumnType("real");
-
-                    b.Property<Guid?>("TournamentId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -60,8 +58,6 @@ namespace office_tournament_api.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
-
-                    b.HasIndex("TournamentId");
 
                     b.HasIndex("UserName")
                         .IsUnique();
@@ -128,26 +124,46 @@ namespace office_tournament_api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdminId")
-                        .IsUnique()
-                        .HasFilter("[AdminId] IS NOT NULL");
-
                     b.ToTable("Tournaments", (string)null);
                 });
 
-            modelBuilder.Entity("office_tournament_api.office_tournament_db.Account", b =>
+            modelBuilder.Entity("office_tournament_api.office_tournament_db.TournamentAccount", b =>
                 {
-                    b.HasOne("office_tournament_api.office_tournament_db.Tournament", "Tournament")
-                        .WithMany("Participants")
-                        .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Navigation("Tournament");
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MatchesPlayed")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MatchesWon")
+                        .HasColumnType("int");
+
+                    b.Property<float>("Score")
+                        .HasColumnType("real");
+
+                    b.Property<Guid>("TournamentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("TournamentId", "AccountId")
+                        .IsUnique();
+
+                    b.ToTable("TournamentAccounts", (string)null);
                 });
 
             modelBuilder.Entity("office_tournament_api.office_tournament_db.Match", b =>
                 {
-                    b.HasOne("office_tournament_api.office_tournament_db.Account", "Loser")
+                    b.HasOne("office_tournament_api.office_tournament_db.TournamentAccount", "Loser")
                         .WithMany("MatchLosses")
                         .HasForeignKey("LoserId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -159,7 +175,7 @@ namespace office_tournament_api.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("office_tournament_api.office_tournament_db.Account", "Winner")
+                    b.HasOne("office_tournament_api.office_tournament_db.TournamentAccount", "Winner")
                         .WithMany("MatchWins")
                         .HasForeignKey("WinnerId")
                         .OnDelete(DeleteBehavior.NoAction)
@@ -172,23 +188,28 @@ namespace office_tournament_api.Migrations
                     b.Navigation("Winner");
                 });
 
-            modelBuilder.Entity("office_tournament_api.office_tournament_db.Tournament", b =>
+            modelBuilder.Entity("office_tournament_api.office_tournament_db.TournamentAccount", b =>
                 {
-                    b.HasOne("office_tournament_api.office_tournament_db.Account", "Admin")
-                        .WithOne("AdminTournament")
-                        .HasForeignKey("office_tournament_api.office_tournament_db.Tournament", "AdminId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                    b.HasOne("office_tournament_api.office_tournament_db.Account", "Account")
+                        .WithMany("TournamentAccounts")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
-                    b.Navigation("Admin");
+                    b.HasOne("office_tournament_api.office_tournament_db.Tournament", "Tournament")
+                        .WithMany("Participants")
+                        .HasForeignKey("TournamentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Tournament");
                 });
 
             modelBuilder.Entity("office_tournament_api.office_tournament_db.Account", b =>
                 {
-                    b.Navigation("AdminTournament");
-
-                    b.Navigation("MatchLosses");
-
-                    b.Navigation("MatchWins");
+                    b.Navigation("TournamentAccounts");
                 });
 
             modelBuilder.Entity("office_tournament_api.office_tournament_db.Tournament", b =>
@@ -196,6 +217,13 @@ namespace office_tournament_api.Migrations
                     b.Navigation("Matches");
 
                     b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("office_tournament_api.office_tournament_db.TournamentAccount", b =>
+                {
+                    b.Navigation("MatchLosses");
+
+                    b.Navigation("MatchWins");
                 });
 #pragma warning restore 612, 618
         }

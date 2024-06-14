@@ -6,9 +6,10 @@ namespace office_tournament_api.Services
 {
     public interface ITournamentService
     {
+        Task<List<DTOTournamentResponse>> SearchTournaments(string query);
         Task<Tournament> GetTournament(Guid id);
-        Task<TournamentResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo);
-        Task<TournamentResult> LeaveTournament(HttpContext httpContext, Guid tournamentId);
-        Task<TournamentResult> CreateTournament(DTOTournamentRequest dtoTournament);
+        Task<ValidationResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo);
+        Task<ValidationResult> LeaveTournament(HttpContext httpContext, Guid tournamentId);
+        Task<ValidationResult> CreateTournament(HttpContext httpContext, DTOTournamentRequest dtoTournament);
     }
 }

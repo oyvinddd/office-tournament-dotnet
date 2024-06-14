@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
@@ -13,18 +14,35 @@ namespace office_tournament_api.Controllers
 {
     [Route("tournaments")]
     [ApiController]
+    [Authorize]
     public class TournamentController : ControllerBase
     {
         private readonly ITournamentService _tournamentService;
-        private readonly DTOMapper _dtoMapper;
+        private readonly DTOMapper _mapper;
         public TournamentController(DataContext context, ITournamentService tournamentService, DTOMapper dtoMapper)
         {
             _tournamentService = tournamentService;
-            _dtoMapper = dtoMapper;
+            _mapper = dtoMapper;
+        }
+
+        [HttpGet("search/{query}")]
+        public async Task<ActionResult<List<DTOTournamentResponse>>> SearchTournaments(string query)
+        {
+            try
+            {
+                List<DTOTournamentResponse> dtoTournaments = await _tournamentService.SearchTournaments(query);
+
+                return Ok(dtoTournaments);
+            }
+            catch (Exception ex)
+            {
+                string error = $"SearchTournaments failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Tournament>> GetTournament(Guid id)
+        public async Task<ActionResult<DTOTournamentResponse>> GetTournament(Guid id)
         {
             try
             {
@@ -36,7 +54,7 @@ namespace office_tournament_api.Controllers
                     return NotFound(error);
                 }
 
-                DTOTournamentResponse dtoTournament = _dtoMapper.TournamentDbToDto(tournament);
+                DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournament);
                 return Ok(dtoTournament);
             }
             catch (Exception ex)
@@ -57,7 +75,7 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult tournamentResult = await _tournamentService.LeaveTournament(HttpContext, tournamentId);
+                ValidationResult tournamentResult = await _tournamentService.LeaveTournament(HttpContext, tournamentId);
 
                 if (tournamentResult == null)
                     return BadRequest(tournamentResult.Errors);
@@ -82,7 +100,7 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult tournamentResult = await _tournamentService.JoinTournament(HttpContext, tournamentId, joinInfo);
+                ValidationResult tournamentResult = await _tournamentService.JoinTournament(HttpContext, tournamentId, joinInfo);
 
                 if (tournamentResult == null)
                     return BadRequest(tournamentResult.Errors);
@@ -106,7 +124,7 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult tournamentResult = await _tournamentService.CreateTournament(dtoTournament);
+                ValidationResult tournamentResult = await _tournamentService.CreateTournament(HttpContext, dtoTournament);
 
                 if(!tournamentResult.IsValid)
                     return BadRequest(tournamentResult.Errors);

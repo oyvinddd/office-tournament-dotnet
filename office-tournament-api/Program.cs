@@ -1,8 +1,17 @@
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using office_tournament_api.DTOs;
+using office_tournament_api.Helpers;
+using office_tournament_api.Middleware;
 using office_tournament_api.office_tournament_db;
+using office_tournament_api.Services;
+using office_tournament_api.Validators;
 using System.Reflection;
+using System.Text;
 
 namespace office_tournament_api
 {
@@ -19,9 +28,73 @@ namespace office_tournament_api
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+            builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<ITournamentService, TournamentService>();
+            builder.Services.AddScoped<IAccountValidator, AccountValidator>();
+            builder.Services.AddScoped<IMatchService, MatchService>();
+            builder.Services.AddScoped<PasswordHandler>();
+            builder.Services.AddScoped<DTOMapper>();
+            builder.Services.AddScoped<EloRating>();
+            builder.Services.AddScoped<JwtTokenHandler>();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             var skipAuthorization = builder.Configuration.GetSection("SkipAuthorization").Value;
+
+            builder.Services.ConfigureOptions<JwtOptionsSetup>();
+            builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = builder.Configuration["Jwt-Auth:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt-Auth:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt-Auth:SecretKey"]))
+                };
+            });
+
+            // Configure the default authorization policy
+            builder.Services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+                        .RequireAuthenticatedUser()
+                        .Build();
+
+            });
+
+            //if(skipAuthorization.ToLower() != "true")
+            //{
+            //    // JWT Configuration
+            //    builder.Services.AddAuthentication(options =>
+            //    {
+            //        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    })
+            //    .AddJwtBearer(options =>
+            //    {
+            //        options.RequireHttpsMetadata = false;
+            //        options.SaveToken = true;
+            //        options.TokenValidationParameters = new TokenValidationParameters
+            //        {
+            //            ValidateIssuerSigningKey = true,
+            //            ValidIssuer = builder.Configuration.GetSection("Jwt-Auth:Issuer").Value,
+            //            ValidAudience = builder.Configuration.GetSection("Jwt-Auth:Audience").Value,
+            //            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt-Auth:Secret").Value)),
+            //            ClockSkew = TimeSpan.Zero
+            //        };
+            //    });
+            //}
+
             builder.Services.AddSwaggerGen(options =>
             {
                 var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

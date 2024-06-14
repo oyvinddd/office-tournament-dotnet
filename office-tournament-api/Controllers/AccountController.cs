@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
@@ -17,11 +18,35 @@ namespace office_tournament_api.Controllers
     {
         private readonly DataContext _context;
         private readonly IAccountService _accountService;
-        public AccountController(DataContext context, IAccountService accountService) 
+        private readonly DTOMapper _mapper;
+        public AccountController(DataContext context, IAccountService accountService, DTOMapper mapper) 
         {
             _context = context;
             _accountService = accountService;
+            _mapper = mapper;
         }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<DTOAccountInfoResponse>> Login(DTOAccountLoginRequest accountLogin)
+        {
+            try
+            {
+                AccountResult? accountResult = await _accountService.Login(accountLogin);
+
+                if (accountResult.Account == null)
+                    return NotFound(accountResult.Errors.FirstOrDefault());
+
+                DTOAccountResponse dtoAccount = _mapper.AccountDbToDto(accountResult.Account);
+                var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccount, accountResult.Token);
+
+                return Ok(dtoAccountInfo);
+            }
+            catch (Exception ex)
+            {
+                string error = $"Login failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
+        } 
 
         /// <summary>
         /// Gets an Account by id
@@ -29,19 +54,23 @@ namespace office_tournament_api.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Account>> GetAccount(Guid id)
+        [ProducesResponseType(typeof(DTOAccountResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [Authorize]
+        public async Task<ActionResult<DTOAccountResponse>> GetAccount(Guid id)
         {
             try
             {
-                Account? account = await _accountService.GetAccount(id);
+                DTOAccountResponse? dtoAccount = await _accountService.GetAccount(id);
 
-                if(account == null)
+                if(dtoAccount == null)
                 {
                     string error = $"Account with id = {id} was not found";
                     return NotFound(error);
                 }
 
-                return Ok(account);
+                return Ok(dtoAccount);
             }catch (Exception ex)
             {
                 string error = $"GetAccount failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
@@ -55,7 +84,10 @@ namespace office_tournament_api.Controllers
         /// <param name="dtoAccount"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult<string>> CreateAccount(DTOAccountRequest dtoAccount)
+        [ProducesResponseType(typeof(DTOAccountInfoResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<DTOAccountResponse>> CreateAccount(DTOAccountRequest dtoAccount)
         {
             try
             {
@@ -66,8 +98,9 @@ namespace office_tournament_api.Controllers
                     return BadRequest(accountResult.Errors);
                 }
 
-                string response = "A new Account was created";
-                return Created("CreateAccount", response);
+                DTOAccountResponse dtoAccountResponse = _mapper.AccountDbToDto(accountResult.Account);
+                var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccountResponse, accountResult.Token);
+                return Created("CreateAccount", dtoAccountResponse);
             }
             catch (Exception ex)
             {

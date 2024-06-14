@@ -10,12 +10,12 @@ namespace office_tournament_api.office_tournament_db
         public Guid TournamentId { get; set; }
 
         [ForeignKey(nameof(WinnerId))]
-        public Account Winner {  get; set; }
+        public TournamentAccount Winner {  get; set; }
         public Guid WinnerId { get; set; }
         public float WinnerDeltaScore { get; set; }
 
         [ForeignKey(nameof(LoserId))]
-        public Account Loser { get; set; }
+        public TournamentAccount Loser { get; set; }
         public Guid LoserId { get; set; }
         public float LoserDeltaScore { get; set; }
         public DateTime Date {  get; set; }

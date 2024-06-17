@@ -134,11 +134,9 @@ namespace office_tournament_api
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
+  
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
 
             app.UseHttpsRedirection();
             app.UseCors(x => x.AllowAnyHeader()

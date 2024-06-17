@@ -26,6 +26,11 @@ namespace office_tournament_api.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <param name="accountLogin"></param>
+        /// <returns></returns>
         [HttpPost("login")]
         public async Task<ActionResult<DTOAccountInfoResponse>> Login(DTOAccountLoginRequest accountLogin)
         {

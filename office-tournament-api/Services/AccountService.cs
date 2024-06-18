@@ -94,6 +94,7 @@ namespace office_tournament_api.Services
             }
 
             validationResult.Token = _jwtTokenHandler.CreateToken(account);
+            validationResult.Account = account;
 
             return validationResult;
         }

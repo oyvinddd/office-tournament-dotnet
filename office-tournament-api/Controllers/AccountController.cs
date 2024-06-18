@@ -32,6 +32,9 @@ namespace office_tournament_api.Controllers
         /// <param name="accountLogin"></param>
         /// <returns></returns>
         [HttpPost("login")]
+        [ProducesResponseType(typeof(DTOAccountInfoResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOAccountInfoResponse>> Login(DTOAccountLoginRequest accountLogin)
         {
             try

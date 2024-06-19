@@ -114,6 +114,30 @@ namespace office_tournament_api.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Resets all Tournaments and creates new ones.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("reset")]
+        public async Task<ActionResult<string>> ResetTournaments()
+        {
+            try
+            {
+                ValidationResult tournamentResult = await _tournamentService.ResetTournaments();
+
+                if (!tournamentResult.IsValid)
+                    return BadRequest(tournamentResult.Errors);
+
+                return Created("ResetTournaments", tournamentResult.SucessMessage);
+            }
+            catch (Exception ex)
+            {
+                string error = $"ResetTournaments failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
+        }
+
         /// <summary>
         /// Creates a new Tournament
         /// </summary>
@@ -133,7 +157,7 @@ namespace office_tournament_api.Controllers
             }
             catch (Exception ex)
             {
-                string error = $"GetAccount failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                string error = $"CreateTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
                 return StatusCode((int)StatusCodes.Status500InternalServerError, error);
             }
         }

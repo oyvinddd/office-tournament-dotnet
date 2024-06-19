@@ -1,5 +1,7 @@
 ﻿using Azure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
+using Microsoft.IdentityModel.Tokens;
 using office_tournament_api.DTOs;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
@@ -175,6 +177,86 @@ namespace office_tournament_api.Services
             tournamentResult.SucessMessage = successMessage;
 
             return tournamentResult;
+        }
+
+        /// <summary>
+        /// Creates a new Tournament and TournamentAccounts for all active Tournaments 
+        /// </summary>
+        /// <param name="httpContext"></param>
+        /// <param name="dtoTournament"></param>
+        /// <returns></returns>
+        public async Task<ValidationResult> ResetTournaments()
+        {
+            ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
+            List<Tournament> existingTournaments = await _context.Tournaments
+                .Include(x => x.Participants)
+                    .ThenInclude(x => x.Account)
+                .Where(x => x.IsActive)
+                .ToListAsync();
+
+            if(existingTournaments.IsNullOrEmpty())
+            {
+                string error = "No existing, active Tournaments were found";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+                return tournamentResult;
+            }
+
+            try
+            {
+
+                List<TournamentAccount> newTournamentAccounts = [];
+                Tournament newTournament = new Tournament();
+
+                foreach (var existingTournament in existingTournaments)
+                {
+                    existingTournament.IsActive = false;
+
+                    newTournament.AdminId = existingTournament.AdminId;
+                    newTournament.Title = existingTournament.Title;
+                    newTournament.ResetInterval = existingTournament.ResetInterval;
+                    newTournament.Code = existingTournament.Code;
+                    newTournament.IsActive = true;
+
+                    TournamentAccount adminTourneyAccount = new TournamentAccount();
+                    adminTourneyAccount.Tournament = existingTournament;
+                    adminTourneyAccount.AccountId = (Guid)existingTournament.AdminId;
+                    adminTourneyAccount.Score = 1600;
+                    adminTourneyAccount.MatchesWon = 0;
+                    adminTourneyAccount.MatchesPlayed = 0;
+
+                    newTournamentAccounts.Add(adminTourneyAccount);
+
+                    foreach (TournamentAccount tournamentAccount in existingTournament.Participants)
+                    {
+                        if (tournamentAccount.Id != newTournament.AdminId)
+                        {
+                            TournamentAccount newTournamentAccount = new TournamentAccount();
+                            newTournamentAccount.Tournament = newTournament;
+                            newTournamentAccount.AccountId = (Guid)tournamentAccount.AccountId;
+                            newTournamentAccount.Score = 1600;
+                            newTournamentAccount.MatchesWon = 0;
+                            newTournamentAccount.MatchesPlayed = 0;
+
+                            newTournamentAccounts.Add(newTournamentAccount);
+                        }
+                    }
+                }
+
+                await _context.Tournaments.AddAsync(newTournament);
+                await _context.TournamentAccounts.AddRangeAsync(newTournamentAccounts);
+                await _context.SaveChangesAsync();
+            }
+            catch(DbUpdateException e)
+            {
+                string error = $"Reset of Tournaments failed during save. Message: {e.Message}. InnerException: {e.InnerException}";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+            }
+
+            string success = "All Tournaments were successfully reset";
+            tournamentResult.SucessMessage = success;
+            return tournamentResult;
         } 
 
         public async Task<ValidationResult> CreateTournament(HttpContext httpContext, DTOTournamentRequest dtoTournament)
@@ -192,6 +274,19 @@ namespace office_tournament_api.Services
                 return tournamentResult;
             }
 
+            //Check if the Account already is admin for another tournament
+            bool anyTournament = await _context.Tournaments
+                .Where(x => x.AdminId == accountId && x.IsActive)
+                .AnyAsync();
+
+            if(anyTournament)
+            {
+                string error = "This account is already admin for an active tournament";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+                return tournamentResult;
+            }
+
             try
             {
                 Tournament tournament = new Tournament();
@@ -199,6 +294,7 @@ namespace office_tournament_api.Services
                 tournament.Title = dtoTournament.Title;
                 tournament.ResetInterval = dtoTournament.ResetInterval;
                 tournament.Code = codeBuilder.RandomPassword();
+                tournament.IsActive = true;
 
                 TournamentAccount adminTourneyAccount = new TournamentAccount();
                 adminTourneyAccount.Tournament = tournament;

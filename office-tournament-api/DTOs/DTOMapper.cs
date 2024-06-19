@@ -23,8 +23,10 @@ namespace office_tournament_api.DTOs
         public DTOTournamentResponse TournamentDbToDto(Tournament tournament)
         {
             var dtoTournament = new DTOTournamentResponse();
-            dtoTournament.Id = tournament.Id;   
+            dtoTournament.Id = tournament.Id;
+            dtoTournament.AdminId = tournament.AdminId;
             dtoTournament.Title = tournament.Title;
+            dtoTournament.IsActive = tournament.IsActive;
 
             if (!tournament.Participants.IsNullOrEmpty())
                 dtoTournament.Accounts = (IList<DTOAccountResponse>)ListTournamentAccountDbToDto(tournament.Participants.ToList());

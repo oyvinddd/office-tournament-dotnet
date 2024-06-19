@@ -10,6 +10,7 @@ namespace office_tournament_api.Services
         Task<Tournament> GetTournament(Guid id);
         Task<ValidationResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo);
         Task<ValidationResult> LeaveTournament(HttpContext httpContext, Guid tournamentId);
+        Task<ValidationResult> ResetTournaments();
         Task<ValidationResult> CreateTournament(HttpContext httpContext, DTOTournamentRequest dtoTournament);
     }
 }

@@ -95,7 +95,7 @@ namespace office_tournament_api.Controllers
         [ProducesResponseType(typeof(DTOAccountInfoResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<DTOAccountResponse>> CreateAccount(DTOAccountRequest dtoAccount)
+        public async Task<ActionResult<DTOAccountInfoResponse>> CreateAccount(DTOAccountRequest dtoAccount)
         {
             try
             {

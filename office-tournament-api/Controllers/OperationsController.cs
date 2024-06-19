@@ -17,6 +17,10 @@ namespace office_tournament_api.Controllers
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Run migrations
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("migrations")]
         public async Task<ActionResult> RunMigrations()
         {
@@ -32,23 +36,28 @@ namespace office_tournament_api.Controllers
             }
         }
 
-        [HttpGet("connection-string")]
-        public async Task<ActionResult> GetConnectionString()
-        {
-            try
-            {
-                string connectionString = _configuration.GetConnectionString("DefaultConnection");
+        //[HttpGet("connection-string")]
+        //public async Task<ActionResult> GetConnectionString()
+        //{
+        //    try
+        //    {
+        //        string connectionString = _configuration.GetConnectionString("DefaultConnection");
 
-                return Ok(connectionString);
+        //        return Ok(connectionString);
 
-            }
-            catch (Exception e)
-            {
-                string error = $"GetConnectionString failed. Message : {e.Message}. InnerException: {e.InnerException}";
-                return BadRequest(error);
-            }
-        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        string error = $"GetConnectionString failed. Message : {e.Message}. InnerException: {e.InnerException}";
+        //        return BadRequest(error);
+        //    }
+        //}
 
+
+        /// <summary>
+        /// Get all migrations that have run on the database
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("get-migrations")]
         public async Task<ActionResult<IEnumerable<string>>> GetMigrations()
         {

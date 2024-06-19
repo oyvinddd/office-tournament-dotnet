@@ -12,6 +12,7 @@ namespace office_tournament_api.office_tournament_db
         public int ResetInterval { get; set; }
         [MaxLength(6)]
         public string Code { get; set; }
+        public bool IsActive { get; set; }
         public IList<TournamentAccount> Participants { get; set; }
         public IList<Match> Matches { get; set; }
     }

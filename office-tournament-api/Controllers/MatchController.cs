@@ -32,7 +32,7 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                ValidationResult validationResult = await _matchService.CreateMatch(HttpContext, dtoMatch);
+                TournamentResult validationResult = await _matchService.CreateMatch(HttpContext, dtoMatch);
 
                 if (!validationResult.IsValid)
                     return BadRequest(validationResult.Errors);

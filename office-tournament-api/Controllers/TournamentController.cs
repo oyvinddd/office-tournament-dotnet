@@ -64,6 +64,30 @@ namespace office_tournament_api.Controllers
             }
         }
 
+
+        [HttpGet("active")]
+        public async Task<ActionResult<DTOTournamentResponse>> GetActiveTournamentForAccount(Guid id)
+        {
+            try
+            {
+                Tournament? tournament = await _tournamentService.GetTournament(id);
+
+                if (tournament == null)
+                {
+                    string error = $"Tournament with id = {id} was not found";
+                    return NotFound(error);
+                }
+
+                DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournament);
+                return Ok(dtoTournament);
+            }
+            catch (Exception ex)
+            {
+                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
+        }
+
         /// <summary>
         /// Add an Account to a Tournament
         /// </summary>

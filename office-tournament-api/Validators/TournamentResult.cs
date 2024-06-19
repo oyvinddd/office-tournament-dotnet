@@ -1,10 +1,13 @@
-﻿namespace office_tournament_api.Validators
+﻿using office_tournament_api.office_tournament_db;
+
+namespace office_tournament_api.Validators
 {
     public class ValidationResult
     {
         public bool IsValid { get; set; }
         public List<string> Errors { get; set; }
         public string SucessMessage { get; set; }
+        public Tournament Tournament { get; set; }
 
         public ValidationResult()
         {

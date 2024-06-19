@@ -90,7 +90,7 @@ namespace office_tournament_api.Controllers
         }
 
         /// <summary>
-        /// Add an Account to a Tournament
+        /// Creates a new TournamentAccount for a Tournament and Account, and adds it to the Tournament
         /// </summary>
         /// <param name="tournamentId"></param>
         /// <param name="joinInfo"></param>

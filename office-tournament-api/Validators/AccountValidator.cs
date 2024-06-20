@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using office_tournament_api.ErrorHandling;
 using office_tournament_api.office_tournament_db;
 using System.Net.Mail;
 using System.Security.Principal;
@@ -25,6 +26,7 @@ namespace office_tournament_api.Validators
                 string error = "Email provided is not a valid email";
                 accountResult.IsValid = false;
                 accountResult.Errors.Add(error);
+                Error newError = AccountErrors.InvalidEmail();
             }
 
             if (emailExists)

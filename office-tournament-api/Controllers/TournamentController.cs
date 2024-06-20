@@ -72,13 +72,13 @@ namespace office_tournament_api.Controllers
             {
                 TournamentResult? tournamentResult = await _tournamentService.GetActiveTournamentForAccount(HttpContext);
 
-                if (tournament == null)
+                if (tournamentResult.Tournament == null)
                 {
-                    string error = $"Tournament with id = {id} was not found";
+                    string error = $"No active Tournament was found for this account";
                     return NotFound(error);
                 }
 
-                DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournament);
+                DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournamentResult.Tournament);
                 return Ok(dtoTournament);
             }
             catch (Exception ex)

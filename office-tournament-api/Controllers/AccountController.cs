@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
+using office_tournament_api.ErrorHandling;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Services;
@@ -70,12 +71,11 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                DTOAccountResponse? dtoAccount = await _accountService.GetAccount(id);
+                (Result result, DTOAccountResponse? dtoAccount) = await _accountService.GetAccount(id);
 
-                if(dtoAccount == null)
+                if(result.IsFailure)
                 {
-                    string error = $"Account with id = {id} was not found";
-                    return NotFound(error);
+                    return BadRequest(ResultExtensions.ToProblemDetails(result));
                 }
 
                 return Ok(dtoAccount);

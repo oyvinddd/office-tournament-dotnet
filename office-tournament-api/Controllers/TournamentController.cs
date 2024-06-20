@@ -66,11 +66,11 @@ namespace office_tournament_api.Controllers
 
 
         [HttpGet("active")]
-        public async Task<ActionResult<DTOTournamentResponse>> GetActiveTournamentForAccount(Guid id)
+        public async Task<ActionResult<DTOTournamentResponse>> GetActiveTournamentForAccount()
         {
             try
             {
-                Tournament? tournament = await _tournamentService.GetTournament(id);
+                TournamentResult? tournamentResult = await _tournamentService.GetActiveTournamentForAccount(HttpContext);
 
                 if (tournament == null)
                 {
@@ -99,7 +99,7 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                ValidationResult tournamentResult = await _tournamentService.LeaveTournament(HttpContext, tournamentId);
+                TournamentResult tournamentResult = await _tournamentService.LeaveTournament(HttpContext, tournamentId);
 
                 if (tournamentResult == null)
                     return BadRequest(tournamentResult.Errors);
@@ -124,7 +124,7 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                ValidationResult tournamentResult = await _tournamentService.JoinTournament(HttpContext, tournamentId, joinInfo);
+                TournamentResult tournamentResult = await _tournamentService.JoinTournament(HttpContext, tournamentId, joinInfo);
 
                 if (tournamentResult == null)
                     return BadRequest(tournamentResult.Errors);
@@ -148,7 +148,7 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                ValidationResult tournamentResult = await _tournamentService.ResetTournaments();
+                TournamentResult tournamentResult = await _tournamentService.ResetTournaments();
 
                 if (!tournamentResult.IsValid)
                     return BadRequest(tournamentResult.Errors);
@@ -172,7 +172,7 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                ValidationResult tournamentResult = await _tournamentService.CreateTournament(HttpContext, dtoTournament);
+                TournamentResult tournamentResult = await _tournamentService.CreateTournament(HttpContext, dtoTournament);
 
                 if(!tournamentResult.IsValid)
                     return BadRequest(tournamentResult.Errors);

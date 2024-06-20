@@ -8,6 +8,7 @@ namespace office_tournament_api.Services
     {
         Task<List<DTOTournamentResponse>> SearchTournaments(string query);
         Task<Tournament> GetTournament(Guid id);
+        Task<TournamentResult?> GetActiveTournamentForAccount(HttpContext httpContext);
         Task<TournamentResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo);
         Task<TournamentResult> LeaveTournament(HttpContext httpContext, Guid tournamentId);
         Task<TournamentResult> ResetTournaments();

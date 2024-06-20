@@ -2,18 +2,18 @@
 
 namespace office_tournament_api.Validators
 {
-    public class ValidationResult
+    public class TournamentResult
     {
         public bool IsValid { get; set; }
         public List<string> Errors { get; set; }
         public string SucessMessage { get; set; }
         public Tournament Tournament { get; set; }
 
-        public ValidationResult()
+        public TournamentResult()
         {
         }
 
-        public ValidationResult(bool isValid, List<string> errors, string sucessMessage)
+        public TournamentResult(bool isValid, List<string> errors, string sucessMessage)
         {
             IsValid = isValid;
             Errors = errors;

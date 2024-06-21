@@ -75,7 +75,8 @@ namespace office_tournament_api.Controllers
 
                 if(result.IsFailure)
                 {
-                    return BadRequest(ResultExtensions.ToProblemDetails(result));
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
                 }
 
                 return Ok(dtoAccount);

@@ -1,19 +1,32 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Runtime.CompilerServices;
 
 namespace office_tournament_api.ErrorHandling
 {
     public static class ResultExtensions
     {
-        public static IResult ToProblemDetails(Result result)
+        public static ProblemDetails ToProblemDetails(Result result)
         {
-            return Results.Problem(
-                statusCode: GetStatusCode(result.Error.ErrorType),
-                title: GetTitle(result.Error.ErrorType),
-                type: GetType(result.Error.ErrorType),
-                extensions: new Dictionary<string, object?>
+            ProblemDetails problemDetails = new ProblemDetails();
+            problemDetails.Status = GetStatusCode(result.Errors.FirstOrDefault().ErrorType);
+            problemDetails.Title = GetTitle(result.Errors.FirstOrDefault().ErrorType);
+            problemDetails.Type = GetType(result.Errors.FirstOrDefault().ErrorType);
+            problemDetails.Extensions = new Dictionary<string, object?>()
                 {
-                    { "errors", new[] { result.Error }}
-                });
+                    { "errors", new[] { result.Errors }}
+                };
+
+            return problemDetails;
+
+
+            //return Results.Problem(
+            //    statusCode: GetStatusCode(result.Errors.FirstOrDefault().ErrorType),
+            //    title: GetTitle(result.Errors.FirstOrDefault().ErrorType),
+            //    type: GetType(result.Errors.FirstOrDefault().ErrorType),
+            //    extensions: new Dictionary<string, object?>
+            //    {
+            //        { "errors", new[] { result.Errors }}
+            //    });
         }
 
         public static int GetStatusCode(ErrorType errorType)

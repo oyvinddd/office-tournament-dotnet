@@ -7,8 +7,8 @@ namespace office_tournament_api.Services
 {
     public interface IAccountService
     {
-        Task<AccountResult?> Login(DTOAccountLoginRequest accountLogin);
+        Task<(Result, DTOAccountInfoResponse?)> Login(DTOAccountLoginRequest accountLogin);
         Task<(Result, DTOAccountResponse?)> GetAccount(Guid id);
-        Task<AccountResult> CreateAccount(DTOAccountRequest dtoAccount);
+        Task<(Result, DTOAccountInfoResponse?)> CreateAccount(DTOAccountRequest dtoAccount);
     }
 }

@@ -17,16 +17,6 @@ namespace office_tournament_api.ErrorHandling
                 };
 
             return problemDetails;
-
-
-            //return Results.Problem(
-            //    statusCode: GetStatusCode(result.Errors.FirstOrDefault().ErrorType),
-            //    title: GetTitle(result.Errors.FirstOrDefault().ErrorType),
-            //    type: GetType(result.Errors.FirstOrDefault().ErrorType),
-            //    extensions: new Dictionary<string, object?>
-            //    {
-            //        { "errors", new[] { result.Errors }}
-            //    });
         }
 
         public static int GetStatusCode(ErrorType errorType)

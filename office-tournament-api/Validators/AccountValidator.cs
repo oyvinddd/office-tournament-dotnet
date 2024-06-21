@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using office_tournament_api.ErrorHandling;
+using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using System.Net.Mail;
 using System.Security.Principal;
@@ -9,41 +10,43 @@ namespace office_tournament_api.Validators
     public class AccountValidator : IAccountValidator
     {
         private readonly DataContext _context;
-        public AccountValidator(DataContext context) 
+        private readonly PasswordHandler _passwordHandler;
+        public AccountValidator(DataContext context, PasswordHandler passwordHandler) 
         {
             _context = context;
+            _passwordHandler = passwordHandler;
         }
 
-        public async Task<AccountResult> IsValidAccount(Account account)
+        public async Task<Result> IsValidAccount(Account account)
         {
-            var accountResult = new AccountResult(true, new List<string>());
+            bool isValid = true;
+            List<Error> errors = new List<Error>();
             bool validEmail = IsValidEmail(account.Email);
             bool emailExists = await DoesEmailExist(account.Email);
             bool userNameExists = await DoesUserNameExist(account.UserName);
 
             if (!validEmail)
             {
-                string error = "Email provided is not a valid email";
-                accountResult.IsValid = false;
-                accountResult.Errors.Add(error);
-                Error newError = AccountErrors.InvalidEmail();
+                isValid = false;
+                errors.Add(AccountErrors.InvalidEmail());
             }
 
             if (emailExists)
             {
-                string error = "An account with the same email exists";
-                accountResult.IsValid = false;
-                accountResult.Errors.Add(error);
+                isValid = false;
+                errors.Add(AccountErrors.ExistingEmail());
             }
 
             if (userNameExists)
             {
-                string error = "An account with the same UserName exists";
-                accountResult.IsValid = false;
-                accountResult.Errors.Add(error);
+                isValid = false;
+                errors.Add(AccountErrors.ExistingUsername());
             }
 
-            return accountResult;
+            if (!isValid)
+                return Result.Failure(errors);
+
+            return Result.Success();
         }
 
         private bool IsValidEmail(string email)

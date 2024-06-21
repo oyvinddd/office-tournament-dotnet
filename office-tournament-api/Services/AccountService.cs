@@ -40,7 +40,6 @@ namespace office_tournament_api.Services
 
         public async Task<(Result, DTOAccountInfoResponse?)> Login(DTOAccountLoginRequest accountLogin)
         {
-            AccountResult accountResult = new AccountResult(true, new List<string>());
             Account? account = await _context.Accounts
                 .Include(x => x.TournamentAccounts)
                 .Where(x => x.UserName.Equals(accountLogin.UserName))
@@ -60,7 +59,7 @@ namespace office_tournament_api.Services
 
             string token = _jwtTokenHandler.CreateToken(account);
             DTOAccountResponse dtoAccount = _mapper.AccountDbToDto(account);
-            var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccount, accountResult.Token);
+            var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccount, token);
             return (Result.Success(), dtoAccountInfo);
         } 
 

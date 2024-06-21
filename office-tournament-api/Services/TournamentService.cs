@@ -30,6 +30,38 @@ namespace office_tournament_api.Services
             return dtoTournaments;
         }
 
+        public async Task<TournamentResult?> GetActiveTournamentForAccount(HttpContext httpContext)
+        {
+            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
+            Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
+
+            if (accountId == null)
+            {
+                string error = "There was an error parsing AccountId from token";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+                return tournamentResult;
+            }
+
+            Tournament? tournament = await _context.Tournaments
+                .Include(x => x.Participants)
+                .Where(x => x.IsActive)
+                .FirstOrDefaultAsync();
+
+            TournamentAccount? tournamentAccount = tournament.Participants.Where(x => x.AccountId == accountId).FirstOrDefault();
+
+            if(tournamentAccount == null)
+            {
+                string error = "No active Tournament was found for the current user";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+                return tournamentResult;
+            }
+
+            tournamentResult.Tournament = tournament;
+            return tournamentResult;
+        }
+
         public async Task<Tournament?> GetTournament(Guid id)
         {
             Tournament? tournament = await _context.Tournaments
@@ -41,9 +73,9 @@ namespace office_tournament_api.Services
             return tournament;
         }
 
-        public async Task<ValidationResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo)
+        public async Task<TournamentResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo)
         {
-            ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
+            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
             Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
@@ -113,9 +145,9 @@ namespace office_tournament_api.Services
             return tournamentResult;
         }
 
-        public async Task<ValidationResult> LeaveTournament(HttpContext httpContext, Guid tournamentId)
+        public async Task<TournamentResult> LeaveTournament(HttpContext httpContext, Guid tournamentId)
         {
-            ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
+            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
             Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
@@ -185,9 +217,9 @@ namespace office_tournament_api.Services
         /// <param name="httpContext"></param>
         /// <param name="dtoTournament"></param>
         /// <returns></returns>
-        public async Task<ValidationResult> ResetTournaments()
+        public async Task<TournamentResult> ResetTournaments()
         {
-            ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
+            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
             List<Tournament> existingTournaments = await _context.Tournaments
                 .Include(x => x.Participants)
                     .ThenInclude(x => x.Account)
@@ -259,9 +291,9 @@ namespace office_tournament_api.Services
             return tournamentResult;
         } 
 
-        public async Task<ValidationResult> CreateTournament(HttpContext httpContext, DTOTournamentRequest dtoTournament)
+        public async Task<TournamentResult> CreateTournament(HttpContext httpContext, DTOTournamentRequest dtoTournament)
         {
-            ValidationResult tournamentResult = new ValidationResult(true, new List<string>(), "");
+            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
             Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
             CodeBuilder codeBuilder = new CodeBuilder();
             Account? account = await _context.Accounts.FindAsync(accountId);

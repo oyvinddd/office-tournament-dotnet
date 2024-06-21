@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
+using office_tournament_api.ErrorHandling;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Validators;
 using System.Security.Principal;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace office_tournament_api.Services
 {
@@ -24,46 +24,46 @@ namespace office_tournament_api.Services
             _mapper = mapper;   
         }
 
-        public async Task<DTOAccountResponse?> GetAccount(Guid id)
+        public async Task<(Result, DTOAccountResponse?)> GetAccount(Guid id)
         {
             Account? account = await _context.Accounts.FindAsync(id);
 
             if (account == null)
-                return null;
+            {
+                List<Error> errors = new List<Error> { AccountErrors.NotFound(id) };
+                return (Result.Failure(errors), null);
+            }
 
             DTOAccountResponse dtoAccount = _mapper.AccountDbToDto(account);
-            return dtoAccount;
+            return (Result.Success(), dtoAccount);
         } 
 
-        public async Task<AccountResult?> Login(DTOAccountLoginRequest accountLogin)
+        public async Task<(Result, DTOAccountInfoResponse?)> Login(DTOAccountLoginRequest accountLogin)
         {
-            AccountResult accountResult = new AccountResult(true, new List<string>());
             Account? account = await _context.Accounts
                 .Include(x => x.TournamentAccounts)
                 .Where(x => x.UserName.Equals(accountLogin.UserName))
                 .FirstOrDefaultAsync();
 
-            if(account == null)
+            if (account == null)
             {
-                accountResult.Errors.Add($"Account with username '{accountLogin.UserName}' not found");
-                return accountResult;
+                return (Result.Failure(new List<Error> { AccountErrors.UserNameNotFound(accountLogin.UserName) }), null);
             }
 
             bool isValidPassword = _passwordHandler.VerifyPassword(accountLogin.Password, account.Password);
 
-            if (!isValidPassword)
+            if(!isValidPassword)
             {
-                accountResult.Errors.Add("Password was not valid");
-                return accountResult;
+                return (Result.Failure(new List<Error> { AccountErrors.InvalidPassword() }), null);
             }
 
-            accountResult.Account = account;
-            accountResult.Token = _jwtTokenHandler.CreateToken(account);
-
-            return accountResult;
+            string token = _jwtTokenHandler.CreateToken(account);
+            DTOAccountResponse dtoAccount = _mapper.AccountDbToDto(account);
+            var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccount, token);
+            return (Result.Success(), dtoAccountInfo);
         } 
 
-        public async Task<AccountResult> CreateAccount(DTOAccountRequest dtoAccount)
+        public async Task<(Result, DTOAccountInfoResponse?)> CreateAccount(DTOAccountRequest dtoAccount)
         {
             Account account = new Account();
             account.Email = dtoAccount.Email;
@@ -75,11 +75,11 @@ namespace office_tournament_api.Services
             account.CreatedDate = DateTime.UtcNow;
             account.UpdatedDate = DateTime.UtcNow;
 
-            AccountResult validationResult = await _accountValidator.IsValidAccount(account);
+            Result validationResult = await _accountValidator.IsValidAccount(account);
 
-            if (!validationResult.IsValid)
+            if (validationResult.IsFailure)
             {
-                return validationResult;
+                return (validationResult, null);
             }
 
             try
@@ -89,14 +89,13 @@ namespace office_tournament_api.Services
             }
             catch(Exception e)
             {
-                validationResult.IsValid = false;
-                validationResult.Errors.Add(e.Message);
+                return (Result.Failure(new List<Error> { AccountErrors.DatabaseFail(e.Message) }), null);
             }
 
-            validationResult.Token = _jwtTokenHandler.CreateToken(account);
-            validationResult.Account = account;
-
-            return validationResult;
+            string token = _jwtTokenHandler.CreateToken(account);
+            DTOAccountResponse dtoAccountResponse = _mapper.AccountDbToDto(account);
+            var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccountResponse, token);
+            return (Result.Success(), dtoAccountInfo);
         }
     }
 }

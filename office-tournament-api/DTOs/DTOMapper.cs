@@ -66,6 +66,7 @@ namespace office_tournament_api.DTOs
             var dtoAccount = new DTOAccountResponse();
             dtoAccount.Id = account.Id;
             dtoAccount.Email = account.Email;
+            dtoAccount.UserName = account.UserName;
             dtoAccount.TotalMatchesWon = account.TotalMatchesWon;
             dtoAccount.TotalMatchesPlayed = account.TotalMatchesPlayed;
             dtoAccount.CreatedDate = account.CreatedDate;

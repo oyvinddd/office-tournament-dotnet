@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
+using office_tournament_api.ErrorHandling;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Services;
@@ -33,19 +34,19 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpPost("login")]
         [ProducesResponseType(typeof(DTOAccountInfoResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOAccountInfoResponse>> Login(DTOAccountLoginRequest accountLogin)
         {
             try
             {
-                AccountResult? accountResult = await _accountService.Login(accountLogin);
+                (Result result, DTOAccountInfoResponse dtoAccountInfo) = await _accountService.Login(accountLogin);
 
-                if (accountResult.Account == null)
-                    return NotFound(accountResult.Errors.FirstOrDefault());
-
-                DTOAccountResponse dtoAccount = _mapper.AccountDbToDto(accountResult.Account);
-                var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccount, accountResult.Token);
+                if (result.IsFailure)
+                {
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
+                }
 
                 return Ok(dtoAccountInfo);
             }
@@ -63,19 +64,19 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(DTOAccountResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         [Authorize]
         public async Task<ActionResult<DTOAccountResponse>> GetAccount(Guid id)
         {
             try
             {
-                DTOAccountResponse? dtoAccount = await _accountService.GetAccount(id);
+                (Result result, DTOAccountResponse? dtoAccount) = await _accountService.GetAccount(id);
 
-                if(dtoAccount == null)
+                if(result.IsFailure)
                 {
-                    string error = $"Account with id = {id} was not found";
-                    return NotFound(error);
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
                 }
 
                 return Ok(dtoAccount);
@@ -93,22 +94,20 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(DTOAccountInfoResponse), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(List<string>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOAccountInfoResponse>> CreateAccount(DTOAccountRequest dtoAccount)
         {
             try
             {
-                AccountResult accountResult = await _accountService.CreateAccount(dtoAccount);
+                (Result result, DTOAccountInfoResponse dtoAccountInfo) = await _accountService.CreateAccount(dtoAccount);
 
-                if(!accountResult.IsValid)
+                if(result.IsFailure)
                 {
-                    return BadRequest(accountResult.Errors);
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
                 }
-
-                DTOAccountResponse dtoAccountResponse = _mapper.AccountDbToDto(accountResult.Account);
-                var dtoAccountInfo = new DTOAccountInfoResponse(dtoAccountResponse, accountResult.Token);
-                return Created("CreateAccount", dtoAccountResponse);
+                return Created("CreateAccount", dtoAccountInfo);
             }
             catch (Exception ex)
             {

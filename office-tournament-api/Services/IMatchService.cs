@@ -5,6 +5,6 @@ namespace office_tournament_api.Services
 {
     public interface IMatchService
     {
-        Task<ValidationResult> CreateMatch(HttpContext httpContext, DTOMatchRequest dtoMatch);
+        Task<TournamentResult> CreateMatch(HttpContext httpContext, DTOMatchRequest dtoMatch);
     }
 }

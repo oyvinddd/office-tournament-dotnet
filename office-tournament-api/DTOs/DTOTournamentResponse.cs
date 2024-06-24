@@ -6,6 +6,6 @@
         public Guid? AdminId { get; set; }
         public string Title { get; set; }
         public bool IsActive { get; set; }
-        public IList<DTOAccountResponse> Accounts { get; set; }
+        public IList<DTOTournamentAccountResponse> TournamentAccounts { get; set; }
     }
 }

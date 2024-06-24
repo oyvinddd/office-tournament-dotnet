@@ -3,6 +3,7 @@
     public class DTOTournamentAccountResponse
     {
         public Guid Id { get; set; }
+        public Guid? AccountId { get; set; }
         public string UserName { get; set; }
         public float Score { get; set; }
         public int MatchesWon { get; set; }

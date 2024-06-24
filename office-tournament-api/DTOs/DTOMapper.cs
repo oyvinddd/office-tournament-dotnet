@@ -29,7 +29,7 @@ namespace office_tournament_api.DTOs
             dtoTournament.IsActive = tournament.IsActive;
 
             if (!tournament.Participants.IsNullOrEmpty())
-                dtoTournament.Accounts = (IList<DTOAccountResponse>)ListTournamentAccountDbToDto(tournament.Participants.ToList());
+                dtoTournament.TournamentAccounts = (IList<DTOTournamentAccountResponse>)ListTournamentAccountDbToDto(tournament.Participants.ToList());
 
             return dtoTournament;
         }
@@ -49,10 +49,11 @@ namespace office_tournament_api.DTOs
 
         public DTOTournamentAccountResponse TournamentAccountDbToDto(TournamentAccount tournamentAccount)
         {
-            Account account = tournamentAccount.Account;
+            Account? account = tournamentAccount.Account;
 
             var dtoAccount = new DTOTournamentAccountResponse();
             dtoAccount.Id = tournamentAccount.Id;
+            dtoAccount.AccountId = account != null ? account.Id : null;
             dtoAccount.UserName = account != null ? account.UserName : "";
             dtoAccount.Score = tournamentAccount.Score;
             dtoAccount.MatchesPlayed = tournamentAccount.MatchesPlayed;

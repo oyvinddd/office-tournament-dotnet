@@ -28,7 +28,7 @@
 
         public static Error ExistingUsername()
         {
-            Error newError = Error.Validation("Accounts.ExistingUsername", "An account with the same UserName already exists");
+            Error newError = Error.Validation("Accounts.ExistingUsername", "An account with the same username already exists");
 
             return newError;
         }

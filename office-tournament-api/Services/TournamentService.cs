@@ -45,8 +45,17 @@ namespace office_tournament_api.Services
 
             Tournament? tournament = await _context.Tournaments
                 .Include(x => x.Participants)
+                    .ThenInclude(x => x.Account)
                 .Where(x => x.IsActive)
                 .FirstOrDefaultAsync();
+
+            if(tournament == null)
+            {
+                string error = "No active Tournament was found for the current user";
+                tournamentResult.IsValid = false;
+                tournamentResult.Errors.Add(error);
+                return tournamentResult;
+            }
 
             TournamentAccount? tournamentAccount = tournament.Participants.Where(x => x.AccountId == accountId).FirstOrDefault();
 
@@ -99,6 +108,7 @@ namespace office_tournament_api.Services
 
             Account? account = await _context.Accounts
                 .Include(x => x.TournamentAccounts.Where(x => x.TournamentId == tournamentId && x.AccountId == accountId))
+                .Where(x => x.Id == accountId)
                 .FirstOrDefaultAsync();
 
             if (account == null)
@@ -110,16 +120,16 @@ namespace office_tournament_api.Services
 
             TournamentAccount? tournamentAccount = account.TournamentAccounts.FirstOrDefault();
 
-            if (tournamentAccount == null)
+            if (tournamentAccount != null)
             {
-                string error = $"TournamentAccount not found";
+                string error = $"This account is already a participant of this Tournament";
                 tournamentResult.IsValid = false;
                 tournamentResult.Errors.Add(error);
             }
 
             if (!tournament.Code.Equals(joinInfo.Code))
             {
-                string error = $"Code supplied doest not match code of Tournament with id = {tournamentId}";
+                string error = $"Code supplied does not match code of Tournament with id = {tournamentId}";
                 tournamentResult.IsValid = false;
                 tournamentResult.Errors.Add(error);
             }
@@ -129,7 +139,15 @@ namespace office_tournament_api.Services
 
             try
             {
-                tournamentAccount.Tournament = tournament;
+                TournamentAccount newTournamentAccount = new TournamentAccount();
+                newTournamentAccount.Tournament = tournament;
+                newTournamentAccount.Account = account;
+                newTournamentAccount.Score = 1600;
+                newTournamentAccount.MatchesWon = 0;
+                newTournamentAccount.MatchesPlayed = 0;
+                newTournamentAccount.UpdatedDate = DateTime.UtcNow;
+
+                await _context.TournamentAccounts.AddAsync(newTournamentAccount);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException e)
@@ -236,14 +254,15 @@ namespace office_tournament_api.Services
 
             try
             {
-
-                List<TournamentAccount> newTournamentAccounts = [];
-                Tournament newTournament = new Tournament();
+                List<Tournament> newTournaments = [];
 
                 foreach (var existingTournament in existingTournaments)
                 {
                     existingTournament.IsActive = false;
 
+                    List<TournamentAccount> newTournamentAccounts = [];
+
+                    Tournament newTournament = new Tournament();
                     newTournament.AdminId = existingTournament.AdminId;
                     newTournament.Title = existingTournament.Title;
                     newTournament.ResetInterval = existingTournament.ResetInterval;
@@ -251,7 +270,7 @@ namespace office_tournament_api.Services
                     newTournament.IsActive = true;
 
                     TournamentAccount adminTourneyAccount = new TournamentAccount();
-                    adminTourneyAccount.Tournament = existingTournament;
+                    adminTourneyAccount.Tournament = newTournament;
                     adminTourneyAccount.AccountId = (Guid)existingTournament.AdminId;
                     adminTourneyAccount.Score = 1600;
                     adminTourneyAccount.MatchesWon = 0;
@@ -273,10 +292,11 @@ namespace office_tournament_api.Services
                             newTournamentAccounts.Add(newTournamentAccount);
                         }
                     }
+                    newTournament.Participants = newTournamentAccounts;
+                    newTournaments.Add(newTournament);
                 }
 
-                await _context.Tournaments.AddAsync(newTournament);
-                await _context.TournamentAccounts.AddRangeAsync(newTournamentAccounts);
+                await _context.Tournaments.AddRangeAsync(newTournaments);
                 await _context.SaveChangesAsync();
             }
             catch(DbUpdateException e)
@@ -284,6 +304,7 @@ namespace office_tournament_api.Services
                 string error = $"Reset of Tournaments failed during save. Message: {e.Message}. InnerException: {e.InnerException}";
                 tournamentResult.IsValid = false;
                 tournamentResult.Errors.Add(error);
+                return tournamentResult;
             }
 
             string success = "All Tournaments were successfully reset";

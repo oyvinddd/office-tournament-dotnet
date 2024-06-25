@@ -30,6 +30,17 @@ namespace office_tournament_api.Services
             return dtoTournaments;
         }
 
+        public async Task<TournamentAccount?> GetAdmin(Guid tournamentId)
+        {
+            TournamentAccount? admin = await _context.TournamentAccounts.Where(x => x.AdminTournamentId == tournamentId).FirstOrDefaultAsync();
+            Tournament? tournament = await _context.Tournaments
+                .Include(x => x.Admin)
+                .Where(x => x.Admin.Id == admin.Id)
+                .FirstOrDefaultAsync();
+
+            return admin;
+        }
+
         public async Task<TournamentResult?> GetActiveTournamentForAccount(HttpContext httpContext)
         {
             TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
@@ -263,7 +274,6 @@ namespace office_tournament_api.Services
                     List<TournamentAccount> newTournamentAccounts = [];
 
                     Tournament newTournament = new Tournament();
-                    newTournament.AdminId = existingTournament.AdminId;
                     newTournament.Title = existingTournament.Title;
                     newTournament.ResetInterval = existingTournament.ResetInterval;
                     newTournament.Code = existingTournament.Code;
@@ -271,16 +281,19 @@ namespace office_tournament_api.Services
 
                     TournamentAccount adminTourneyAccount = new TournamentAccount();
                     adminTourneyAccount.Tournament = newTournament;
-                    adminTourneyAccount.AccountId = (Guid)existingTournament.AdminId;
+                    adminTourneyAccount.AdminTournament = newTournament;
+                    adminTourneyAccount.AccountId = (Guid)existingTournament.Admin.AccountId;
                     adminTourneyAccount.Score = 1600;
                     adminTourneyAccount.MatchesWon = 0;
                     adminTourneyAccount.MatchesPlayed = 0;
+
+                    newTournament.Admin = adminTourneyAccount;
 
                     newTournamentAccounts.Add(adminTourneyAccount);
 
                     foreach (TournamentAccount tournamentAccount in existingTournament.Participants)
                     {
-                        if (tournamentAccount.Id != newTournament.AdminId)
+                        if (tournamentAccount.AccountId != adminTourneyAccount.AccountId)
                         {
                             TournamentAccount newTournamentAccount = new TournamentAccount();
                             newTournamentAccount.Tournament = newTournament;
@@ -297,6 +310,13 @@ namespace office_tournament_api.Services
                 }
 
                 await _context.Tournaments.AddRangeAsync(newTournaments);
+                await _context.SaveChangesAsync();
+
+                foreach (var newTournament in newTournaments)
+                {
+                    newTournament.AdminId = newTournament.Admin.Id;
+                }
+
                 await _context.SaveChangesAsync();
             }
             catch(DbUpdateException e)
@@ -342,21 +362,24 @@ namespace office_tournament_api.Services
 
             try
             {
-                Tournament tournament = new Tournament();
-                tournament.AdminId = accountId;
-                tournament.Title = dtoTournament.Title;
-                tournament.ResetInterval = dtoTournament.ResetInterval;
-                tournament.Code = codeBuilder.RandomPassword();
-                tournament.IsActive = true;
-
                 TournamentAccount adminTourneyAccount = new TournamentAccount();
-                adminTourneyAccount.Tournament = tournament;
                 adminTourneyAccount.AccountId = (Guid)accountId;
                 adminTourneyAccount.Score = 1600;
                 adminTourneyAccount.MatchesWon = 0;
                 adminTourneyAccount.MatchesPlayed = 0;
 
+                Tournament tournament = new Tournament();
+                tournament.Admin = adminTourneyAccount;
+                tournament.Title = dtoTournament.Title;
+                tournament.ResetInterval = dtoTournament.ResetInterval;
+                tournament.Code = codeBuilder.RandomPassword();
+                tournament.IsActive = true;
+                tournament.Participants = new List<TournamentAccount> { adminTourneyAccount };
+   
                 await _context.Tournaments.AddAsync(tournament);
+                await _context.SaveChangesAsync();
+
+                tournament.AdminId = adminTourneyAccount.Id;
                 await _context.SaveChangesAsync();
             }
             catch(DbUpdateException e)

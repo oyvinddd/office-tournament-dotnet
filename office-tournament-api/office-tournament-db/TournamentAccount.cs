@@ -10,6 +10,9 @@ namespace office_tournament_api.office_tournament_db
         [ForeignKey(nameof(TournamentId))]
         public Tournament Tournament { get; set; }
         public Guid TournamentId { get; set; }
+        [ForeignKey(nameof(AdminTournamentId))]
+        public Tournament? AdminTournament { get; set; }
+        public Guid? AdminTournamentId { get; set; }
         [ForeignKey(nameof(AccountId))]
         public Account Account { get; set; }
         public Guid AccountId { get; set; }
@@ -19,5 +22,22 @@ namespace office_tournament_api.office_tournament_db
         public DateTime UpdatedDate { get; set; }
         public IList<Match> MatchWins { get; set; }
         public IList<Match> MatchLosses { get; set; }
+
+        public TournamentAccount() { }
+
+        public TournamentAccount(Tournament tournament, Guid tournamentId, Tournament? adminTournament, Guid? adminTournamentId, Account account, Guid accountId, 
+            float score, int matchesWon, int matchesPlayed, DateTime updatedDate)
+        {
+            Tournament = tournament;
+            TournamentId = tournamentId;
+            AdminTournament = adminTournament;
+            AdminTournamentId = adminTournamentId;
+            Account = account;
+            AccountId = accountId;
+            Score = score;
+            MatchesWon = matchesWon;
+            MatchesPlayed = matchesPlayed;
+            UpdatedDate = updatedDate;
+        }
     }
 }

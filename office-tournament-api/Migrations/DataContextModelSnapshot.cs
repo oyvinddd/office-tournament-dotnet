@@ -106,7 +106,7 @@ namespace office_tournament_api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AdminId")
+                    b.Property<Guid>("AdminId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Code")
@@ -139,6 +139,9 @@ namespace office_tournament_api.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("AdminTournamentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("MatchesPlayed")
                         .HasColumnType("int");
 
@@ -157,6 +160,10 @@ namespace office_tournament_api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("AdminTournamentId")
+                        .IsUnique()
+                        .HasFilter("[AdminTournamentId] IS NOT NULL");
 
                     b.HasIndex("TournamentId", "AccountId")
                         .IsUnique();
@@ -199,6 +206,11 @@ namespace office_tournament_api.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("office_tournament_api.office_tournament_db.Tournament", "AdminTournament")
+                        .WithOne("Admin")
+                        .HasForeignKey("office_tournament_api.office_tournament_db.TournamentAccount", "AdminTournamentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("office_tournament_api.office_tournament_db.Tournament", "Tournament")
                         .WithMany("Participants")
                         .HasForeignKey("TournamentId")
@@ -206,6 +218,8 @@ namespace office_tournament_api.Migrations
                         .IsRequired();
 
                     b.Navigation("Account");
+
+                    b.Navigation("AdminTournament");
 
                     b.Navigation("Tournament");
                 });
@@ -217,6 +231,9 @@ namespace office_tournament_api.Migrations
 
             modelBuilder.Entity("office_tournament_api.office_tournament_db.Tournament", b =>
                 {
+                    b.Navigation("Admin")
+                        .IsRequired();
+
                     b.Navigation("Matches");
 
                     b.Navigation("Participants");

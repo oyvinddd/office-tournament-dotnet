@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace office_tournament_api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class NewInitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -34,10 +34,11 @@ namespace office_tournament_api.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AdminId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    AdminId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ResetInterval = table.Column<int>(type: "int", nullable: false),
-                    Code = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false)
+                    Code = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -50,6 +51,7 @@ namespace office_tournament_api.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AdminTournamentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Score = table.Column<float>(type: "real", nullable: false),
                     MatchesWon = table.Column<int>(type: "int", nullable: false),
@@ -63,6 +65,11 @@ namespace office_tournament_api.Migrations
                         name: "FK_TournamentAccounts_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TournamentAccounts_Tournaments_AdminTournamentId",
+                        column: x => x.AdminTournamentId,
+                        principalTable: "Tournaments",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_TournamentAccounts_Tournaments_TournamentId",
@@ -134,6 +141,13 @@ namespace office_tournament_api.Migrations
                 name: "IX_TournamentAccounts_AccountId",
                 table: "TournamentAccounts",
                 column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TournamentAccounts_AdminTournamentId",
+                table: "TournamentAccounts",
+                column: "AdminTournamentId",
+                unique: true,
+                filter: "[AdminTournamentId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TournamentAccounts_TournamentId_AccountId",

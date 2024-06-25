@@ -64,6 +64,28 @@ namespace office_tournament_api.Controllers
             }
         }
 
+        [HttpGet("admin")]
+        public async Task<ActionResult<TournamentAccount?>> GetAdmin(Guid tournamentId)
+        {
+            try
+            {
+                TournamentAccount? admin = await _tournamentService.GetAdmin(tournamentId);
+
+                if (admin == null)
+                {
+                    string error = $"No admin was found for this tournament";
+                    return NotFound(error);
+                }
+
+                return Ok(admin);
+            }
+            catch (Exception ex)
+            {
+                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
+                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+            }
+        }
+
 
         [HttpGet("active")]
         public async Task<ActionResult<DTOTournamentResponse>> GetActiveTournamentForAccount()
@@ -89,7 +111,7 @@ namespace office_tournament_api.Controllers
         }
 
         /// <summary>
-        /// Add an Account to a Tournament
+        /// Removes connection of a TournamentAccount to a Tournament, essentially leaving that Tournament
         /// </summary>
         /// <param name="tournamentId"></param>
         /// <param name="joinInfo"></param>

@@ -53,6 +53,7 @@ namespace office_tournament_api.DTOs
 
             var dtoAccount = new DTOTournamentAccountResponse();
             dtoAccount.Id = tournamentAccount.Id;
+            dtoAccount.TournamentId = tournamentAccount.TournamentId;
             dtoAccount.AccountId = account != null ? account.Id : null;
             dtoAccount.UserName = account != null ? account.UserName : "";
             dtoAccount.Score = tournamentAccount.Score;

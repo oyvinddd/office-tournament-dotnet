@@ -36,6 +36,26 @@ namespace office_tournament_api.Controllers
             }
         }
 
+        /// <summary>
+        /// Drops database and runs migrations again
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("drop-and-run-migrations")]
+        public async Task<ActionResult> DropDbAndRunMigrations()
+        {
+            try
+            {
+                await _context.Database.EnsureDeletedAsync();
+                await _context.Database.MigrateAsync();
+                return Ok("Database dropped. Migrations ran successfully");
+            }
+            catch (Exception e)
+            {
+                string error = $"DropDbAndRunMigrations failed. Message : {e.Message}. InnerException: {e.InnerException}";
+                return BadRequest(error);
+            }
+        }
+
         //[HttpGet("connection-string")]
         //public async Task<ActionResult> GetConnectionString()
         //{

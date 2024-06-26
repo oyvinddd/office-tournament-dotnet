@@ -86,7 +86,10 @@ namespace office_tournament_api.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Gets the current active tournament for the logged in account
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("active")]
         public async Task<ActionResult<DTOTournamentResponse>> GetActiveTournamentForAccount()
         {

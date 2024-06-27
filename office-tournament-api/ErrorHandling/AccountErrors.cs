@@ -12,6 +12,11 @@
             return Error.NotFound("Accounts.UserNameNotFound", $"The Account with username '{username}' was not found");
         }
 
+        public static Error InvalidLoginDetails()
+        {
+            return Error.Validation("Accounts.InvalidLoginDetails", "Invalid login details");
+        }
+
         public static Error InvalidEmail()
         {
             Error newError = Error.Validation("Accounts.InvalidEmail", $"Email was invalid");

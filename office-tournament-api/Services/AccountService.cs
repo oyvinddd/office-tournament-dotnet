@@ -4,6 +4,7 @@ using office_tournament_api.ErrorHandling;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Validators;
+using System.Net.Mail;
 using System.Security.Principal;
 
 namespace office_tournament_api.Services
@@ -42,19 +43,19 @@ namespace office_tournament_api.Services
         {
             Account? account = await _context.Accounts
                 .Include(x => x.TournamentAccounts)
-                .Where(x => x.UserName.Equals(accountLogin.UserName))
+                .Where(x => x.UserName.Equals(accountLogin.LoginDetails) || x.Email.Equals(accountLogin.LoginDetails))
                 .FirstOrDefaultAsync();
 
             if (account == null)
             {
-                return (Result.Failure(new List<Error> { AccountErrors.UserNameNotFound(accountLogin.UserName) }), null);
+                return (Result.Failure(new List<Error> { AccountErrors.InvalidLoginDetails() }), null);
             }
 
             bool isValidPassword = _passwordHandler.VerifyPassword(accountLogin.Password, account.Password);
 
             if(!isValidPassword)
             {
-                return (Result.Failure(new List<Error> { AccountErrors.InvalidPassword() }), null);
+                return (Result.Failure(new List<Error> { AccountErrors.InvalidLoginDetails() }), null);
             }
 
             string token = _jwtTokenHandler.CreateToken(account);

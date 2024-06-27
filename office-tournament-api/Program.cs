@@ -32,6 +32,7 @@ namespace office_tournament_api
             builder.Services.AddScoped<ITournamentService, TournamentService>();
             builder.Services.AddScoped<IAccountValidator, AccountValidator>();
             builder.Services.AddScoped<IMatchService, MatchService>();
+            builder.Services.AddScoped<IPushTokenService, PushTokenService>();
             builder.Services.AddScoped<PasswordHandler>();
             builder.Services.AddScoped<DTOMapper>();
             builder.Services.AddScoped<EloRating>();

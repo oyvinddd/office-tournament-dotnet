@@ -244,7 +244,7 @@ namespace office_tournament_api.Controllers
                 if(!tournamentResult.IsValid)
                     return BadRequest(tournamentResult.Errors);
 
-                return Created("CreateTournament", tournamentResult.SucessMessage);
+                return Created("CreateTournament", tournamentResult.Tournament.Code);
             }
             catch (Exception ex)
             {

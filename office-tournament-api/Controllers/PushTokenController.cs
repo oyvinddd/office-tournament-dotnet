@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using office_tournament_api.DTOs;
 using office_tournament_api.ErrorHandling;
@@ -10,6 +11,7 @@ namespace office_tournament_api.Controllers
 {
     [Route("api/push-tokens")]
     [ApiController]
+    [Authorize]
     public class PushTokenController : ControllerBase
     {
         private readonly IPushTokenService _pushTokenService;

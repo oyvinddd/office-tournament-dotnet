@@ -9,7 +9,7 @@ using System.Security.Principal;
 
 namespace office_tournament_api.Controllers
 {
-    [Route("api/push-tokens")]
+    [Route("push-tokens")]
     [ApiController]
     [Authorize]
     public class PushTokenController : ControllerBase

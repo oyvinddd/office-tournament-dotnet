@@ -25,7 +25,14 @@ namespace office_tournament_api.Controllers
             _mapper = dtoMapper;
         }
 
+        /// <summary>
+        /// Gets a Tournament by a query of its Title
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
         [HttpGet("search/{query}")]
+        [ProducesResponseType(typeof(List<DTOTournamentResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<DTOTournamentResponse>>> SearchTournaments(string query)
         {
             try
@@ -41,7 +48,15 @@ namespace office_tournament_api.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets a Tournament by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(DTOAccountResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOTournamentResponse>> GetTournament(Guid id)
         {
             try
@@ -64,7 +79,15 @@ namespace office_tournament_api.Controllers
             }
         }
 
+        /// <summary>
+        /// Gets the Admin (TournamentAccount) of a given Tournament
+        /// </summary>
+        /// <param name="tournamentId"></param>
+        /// <returns></returns>
         [HttpGet("admin")]
+        [ProducesResponseType(typeof(DTOTournamentAccountResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<TournamentAccount?>> GetAdmin(Guid tournamentId)
         {
             try
@@ -76,8 +99,8 @@ namespace office_tournament_api.Controllers
                     string error = $"No admin was found for this tournament";
                     return NotFound(error);
                 }
-
-                return Ok(admin);
+                DTOTournamentAccountResponse dtoAdmin = _mapper.TournamentAccountDbToDto(admin);
+                return Ok(dtoAdmin);
             }
             catch (Exception ex)
             {
@@ -91,6 +114,9 @@ namespace office_tournament_api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("active")]
+        [ProducesResponseType(typeof(DTOTournamentResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOTournamentResponse>> GetActiveTournamentForAccount()
         {
             try
@@ -120,6 +146,10 @@ namespace office_tournament_api.Controllers
         /// <param name="joinInfo"></param>
         /// <returns></returns>
         [HttpPut("leave/{tournamentId}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> LeaveTournament(Guid tournamentId)
         {
             try
@@ -145,6 +175,10 @@ namespace office_tournament_api.Controllers
         /// <param name="joinInfo"></param>
         /// <returns></returns>
         [HttpPut("join/{tournamentId}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> JoinTournament(Guid tournamentId, DTOAccountJoinRequest joinInfo)
         {
             try
@@ -169,6 +203,10 @@ namespace office_tournament_api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("reset")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<string>> ResetTournaments()
         {
             try
@@ -193,6 +231,10 @@ namespace office_tournament_api.Controllers
         /// <param name="dtoTournament"></param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(string), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<string>> CreateTournament(DTOTournamentRequest dtoTournament)
         {
             try

@@ -20,5 +20,6 @@ namespace office_tournament_api.office_tournament_db
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
         public IList<TournamentAccount> TournamentAccounts { get; set;}
+        public IList<PushToken> PushTokens { get; set; }
     }
 }

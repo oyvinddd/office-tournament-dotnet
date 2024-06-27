@@ -28,6 +28,10 @@ namespace office_tournament_api.Controllers
         /// <param name="dtoMatch"></param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<string>> CreateMatch(DTOMatchRequest dtoMatch)
         {
             try

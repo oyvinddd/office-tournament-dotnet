@@ -8,6 +8,7 @@ namespace office_tournament_api.office_tournament_db
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Match> Matches { get; set; }
+        public DbSet<PushToken> PushTokens { get; set; }
         public DbSet<TournamentAccount> TournamentAccounts { get; set; }
         public DbSet<Tournament> Tournaments { get; set; }
 
@@ -35,6 +36,13 @@ namespace office_tournament_api.office_tournament_db
                .HasOne(x => x.Loser)
                .WithMany(x => x.MatchLosses)
                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder
+                .Entity<PushToken>()
+                .ToTable("PushTokens")
+                .HasOne(x => x.Account)
+                .WithMany(x => x.PushTokens)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder
                 .Entity<TournamentAccount>()

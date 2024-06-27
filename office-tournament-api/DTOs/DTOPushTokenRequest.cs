@@ -12,7 +12,7 @@ namespace office_tournament_api.DTOs
         {
             if(string.IsNullOrEmpty(Token))
             {
-                yield return new ValidationResult("Token is empty", new[] { nameof(Token) });
+                yield return new ValidationResult("Token cannot be empty", new[] { nameof(Token) });
             }
         }
     }

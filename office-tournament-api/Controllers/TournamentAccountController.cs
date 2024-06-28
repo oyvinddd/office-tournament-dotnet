@@ -21,7 +21,7 @@ namespace office_tournament_api.Controllers
         }
 
         /// <summary>
-        /// Creates a new Tournament
+        /// Creates a new TournamentAccount
         /// </summary>
         /// <param name="dtoTournament"></param>
         /// <returns></returns>
@@ -34,12 +34,8 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult tournamentResult = await _tournamentService.CreateTournament(HttpContext, dtoTournament);
 
-                if (!tournamentResult.IsValid)
-                    return BadRequest(tournamentResult.Errors);
-
-                return Created("CreateTournament", tournamentResult.SucessMessage);
+                return Created("CreateTournament", "");
             }
             catch (Exception ex)
             {

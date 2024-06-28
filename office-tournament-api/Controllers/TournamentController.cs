@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
+using office_tournament_api.ErrorHandling;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Services;
@@ -61,12 +63,12 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                Tournament? tournament = await _tournamentService.GetTournament(id);
+                (Result result, Tournament? tournament) = await _tournamentService.GetTournament(id);
 
-                if(tournament == null)
+                if (result.IsFailure)
                 {
-                    string error = $"Tournament with id = {id} was not found";
-                    return NotFound(error);
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
                 }
 
                 DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournament);
@@ -121,15 +123,15 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult? tournamentResult = await _tournamentService.GetActiveTournamentForAccount(HttpContext);
+                (Result result, Tournament tournament) = await _tournamentService.GetActiveTournamentForAccount(HttpContext);
 
-                if (tournamentResult.Tournament == null)
+                if(result.IsFailure)
                 {
-                    string error = $"No active Tournament was found for this account";
-                    return NotFound(error);
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
                 }
 
-                DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournamentResult.Tournament);
+                DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournament);
                 return Ok(dtoTournament);
             }
             catch (Exception ex)
@@ -154,12 +156,15 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult tournamentResult = await _tournamentService.LeaveTournament(HttpContext, tournamentId);
+                Result result = await _tournamentService.LeaveTournament(HttpContext, tournamentId);
 
-                if (tournamentResult == null)
-                    return BadRequest(tournamentResult.Errors);
+                if (result.IsFailure)
+                {
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
+                }
 
-                return Ok(tournamentResult.SucessMessage);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -183,12 +188,15 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult tournamentResult = await _tournamentService.JoinTournament(HttpContext, tournamentId, joinInfo);
+                Result result = await _tournamentService.JoinTournament(HttpContext, tournamentId, joinInfo);
 
-                if (tournamentResult == null)
-                    return BadRequest(tournamentResult.Errors);
+                if (result.IsFailure)
+                {
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
+                }
 
-                return Ok(tournamentResult.SucessMessage);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -211,12 +219,15 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult tournamentResult = await _tournamentService.ResetTournaments();
+                Result result = await _tournamentService.ResetTournaments();
 
-                if (!tournamentResult.IsValid)
-                    return BadRequest(tournamentResult.Errors);
+                if (result.IsFailure)
+                {
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
+                }
 
-                return Created("ResetTournaments", tournamentResult.SucessMessage);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -226,7 +237,7 @@ namespace office_tournament_api.Controllers
         }
 
         /// <summary>
-        /// Creates a new Tournament
+        /// Creates a new Tournament and returns the code of the Tournament
         /// </summary>
         /// <param name="dtoTournament"></param>
         /// <returns></returns>
@@ -239,12 +250,15 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult tournamentResult = await _tournamentService.CreateTournament(HttpContext, dtoTournament);
+                (Result result, Tournament? tournament) = await _tournamentService.CreateTournament(HttpContext, dtoTournament);
 
-                if(!tournamentResult.IsValid)
-                    return BadRequest(tournamentResult.Errors);
+                if (result.IsFailure)
+                {
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
+                }
 
-                return Created("CreateTournament", tournamentResult.Tournament.Code);
+                return Created("CreateTournament", tournament.Code);
             }
             catch (Exception ex)
             {

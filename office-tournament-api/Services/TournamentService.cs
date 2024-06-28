@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using office_tournament_api.DTOs;
+using office_tournament_api.ErrorHandling;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Validators;
@@ -41,17 +42,15 @@ namespace office_tournament_api.Services
             return admin;
         }
 
-        public async Task<TournamentResult?> GetActiveTournamentForAccount(HttpContext httpContext)
+        public async Task<(Result, Tournament?)> GetActiveTournamentForAccount(HttpContext httpContext)
         {
-            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
+            List<Error> errors = new List<Error>(); 
             Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
             {
-                string error = "There was an error parsing AccountId from token";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
-                return tournamentResult;
+                errors.Add(ApplicationErrors.ParseError());
+                return (Result.Failure(errors),null);
             }
 
             Tournament? tournament = await _context.Tournaments
@@ -62,47 +61,49 @@ namespace office_tournament_api.Services
 
             if(tournament == null)
             {
-                string error = "No active Tournament was found for the current user";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
-                return tournamentResult;
+                errors.Add(TournamentErrors.NoActiveTournament());
+                return (Result.Failure(errors), null);
             }
 
             TournamentAccount? tournamentAccount = tournament.Participants.Where(x => x.AccountId == accountId).FirstOrDefault();
 
             if(tournamentAccount == null)
             {
-                string error = "No active Tournament was found for the current user";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
-                return tournamentResult;
+                errors.Add(TournamentErrors.NoActiveTournament());
+                return (Result.Failure(errors), null);
             }
 
-            tournamentResult.Tournament = tournament;
-            return tournamentResult;
+            return (Result.Success(), tournament);
         }
 
-        public async Task<Tournament?> GetTournament(Guid id)
+        public async Task<(Result, Tournament?)> GetTournament(Guid id)
         {
+            List<Error> errors = new List<Error>();
             Tournament? tournament = await _context.Tournaments
                 .Include(x => x.Participants.OrderByDescending(x => x.Score))
                     .ThenInclude(x => x.Account)
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync();
 
-            return tournament;
+            if(tournament == null)
+            {
+                errors.Add(TournamentErrors.NotFound(id));
+                return (Result.Failure(errors), null);
+            }
+
+            return (Result.Success(), tournament);
         }
 
-        public async Task<TournamentResult> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo)
+        public async Task<Result> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo)
         {
-            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
+            bool isValid = true;
+            List<Error> errors = new List<Error>();
             Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
             {
-                string error = "There was an error parsing AccountId from token";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(ApplicationErrors.ParseError());
+                return Result.Success();
             }
 
             Tournament? tournament = await _context.Tournaments
@@ -112,9 +113,8 @@ namespace office_tournament_api.Services
 
             if (tournament == null)
             {
-                string error = $"Tournament with id = {tournamentId} was not found";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(TournamentErrors.NotFound(tournamentId));
+                isValid = false;
             }
 
             Account? account = await _context.Accounts
@@ -124,29 +124,30 @@ namespace office_tournament_api.Services
 
             if (account == null)
             {
-                string error = $"Account with id = {accountId} was not found";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(AccountErrors.NotFound((Guid)accountId));
+                isValid = false;
             }
 
-            TournamentAccount? tournamentAccount = account.TournamentAccounts.FirstOrDefault();
+            if (!isValid)
+                return Result.Failure(errors);
+
+            TournamentAccount? tournamentAccount = account.TournamentAccounts
+                .Where(x => x.TournamentId == tournamentId && x.AccountId == accountId).FirstOrDefault();
 
             if (tournamentAccount != null)
             {
-                string error = $"This account is already a participant of this Tournament";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(TournamentErrors.AlreadyJoined());
+                isValid = false;
             }
 
             if (!tournament.Code.Equals(joinInfo.Code))
             {
-                string error = $"Code supplied does not match code of Tournament with id = {tournamentId}";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(TournamentErrors.InvalidCode(tournamentId));
+                isValid = false;
             }
 
-            if (!tournamentResult.IsValid)
-                return tournamentResult;
+            if (!isValid)
+                return Result.Failure(errors);
 
             try
             {
@@ -161,29 +162,26 @@ namespace office_tournament_api.Services
                 await _context.TournamentAccounts.AddAsync(newTournamentAccount);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException e)
+            catch (Exception e)
             {
-                string error = $"There was an error when trying to add Account with id = {accountId} to Tournament with id = {tournamentId}. Message: {e.Message}. " +
-                    $"InnerException: {e.InnerException}";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(TournamentAccountErrors.DatabaseSaveFailure(e.Message));
+                return Result.Failure(errors);
             }
 
-            string successMessage = $"Account with id = {accountId} joined Tournament with id = {tournamentId}";
-            tournamentResult.SucessMessage = successMessage;
-            return tournamentResult;
+            return Result.Success();
         }
 
-        public async Task<TournamentResult> LeaveTournament(HttpContext httpContext, Guid tournamentId)
+        public async Task<Result> LeaveTournament(HttpContext httpContext, Guid tournamentId)
         {
-            TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
+            bool isValid = false;
+            List<Error> errors = new List<Error>();
+            TournamentResult tournamentResult = new TournamentResult();
             Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
             {
-                string error = "There was an error parsing AccountId from token";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(ApplicationErrors.ParseError());
+                return Result.Failure(errors);
             }
 
             Tournament? tournament = await _context.Tournaments
@@ -193,9 +191,8 @@ namespace office_tournament_api.Services
 
             if (tournament == null)
             {
-                string error = $"Tournament with id = {tournamentId} was not found";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(TournamentErrors.NotFound(tournamentId));
+                isValid = false;
             }
 
             Account? account = await _context.Accounts
@@ -204,40 +201,37 @@ namespace office_tournament_api.Services
 
             if (account == null)
             {
-                string error = $"Account with id = {accountId} was not found";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(AccountErrors.NotFound((Guid)accountId));
+                isValid = false;
             }
 
-            TournamentAccount? tournamentAccount = account.TournamentAccounts.FirstOrDefault();
+            if (!isValid)
+                return Result.Failure(errors);
+
+            TournamentAccount? tournamentAccount = account.TournamentAccounts
+                .Where(x => x.TournamentId == tournamentId && x.AccountId == accountId).FirstOrDefault();
 
             if (tournamentAccount == null)
             {
-                string error = $"TournamentAccount not found";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(TournamentAccountErrors.NotFoundByTournamentAndAccount(tournamentId, (Guid)accountId));
+                isValid = false;
             }
 
-            if (!tournamentResult.IsValid)
-                return tournamentResult;
+            if (!isValid)
+                return Result.Failure(errors);
 
             try
             {
                 tournamentAccount.Tournament = null;
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException e)
+            catch (Exception e)
             {
-                string error = $"There was an error when trying to remove Account with id = {accountId} from Tournament with id = {tournamentId}. Message: {e.Message}. " +
-                    $"InnerException: {e.InnerException}";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                errors.Add(TournamentAccountErrors.DatabaseSaveFailureLeaveTournament(tournamentId, (Guid)accountId, e.Message));
+                return Result.Failure(errors);
             }
 
-            string successMessage = $"Account with id = {accountId} left Tournament with id = {tournamentId}";
-            tournamentResult.SucessMessage = successMessage;
-
-            return tournamentResult;
+            return Result.Success();
         }
 
         /// <summary>
@@ -246,8 +240,9 @@ namespace office_tournament_api.Services
         /// <param name="httpContext"></param>
         /// <param name="dtoTournament"></param>
         /// <returns></returns>
-        public async Task<TournamentResult> ResetTournaments()
+        public async Task<Result> ResetTournaments()
         {
+            var errors = new List<Error>();
             TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
             List<Tournament> existingTournaments = await _context.Tournaments
                 .Include(x => x.Participants)
@@ -257,10 +252,8 @@ namespace office_tournament_api.Services
 
             if(existingTournaments.IsNullOrEmpty())
             {
-                string error = "No existing, active Tournaments were found";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
-                return tournamentResult;
+                errors.Add(TournamentErrors.ExistingTournamentsNotFound());
+                return Result.Failure(errors);
             }
 
             try
@@ -319,46 +312,46 @@ namespace office_tournament_api.Services
 
                 await _context.SaveChangesAsync();
             }
-            catch(DbUpdateException e)
+            catch(Exception e)
             {
-                string error = $"Reset of Tournaments failed during save. Message: {e.Message}. InnerException: {e.InnerException}";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
-                return tournamentResult;
+                string error = $"Reset of Tournaments failed during save. Message: {e.Message}";
+                errors.Add(TournamentErrors.DatabaseSaveFailure(error));
+                return Result.Failure(errors);
             }
 
-            string success = "All Tournaments were successfully reset";
-            tournamentResult.SucessMessage = success;
-            return tournamentResult;
+            return Result.Success();
         } 
 
-        public async Task<TournamentResult> CreateTournament(HttpContext httpContext, DTOTournamentRequest dtoTournament)
+        public async Task<(Result, Tournament?)> CreateTournament(HttpContext httpContext, DTOTournamentRequest dtoTournament)
         {
             TournamentResult tournamentResult = new TournamentResult(true, new List<string>(), "");
+            var errors = new List<Error>();
             Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
             CodeBuilder codeBuilder = new CodeBuilder();
-            Account? account = await _context.Accounts.FindAsync(accountId);
+
+
+            Account? account = await _context.Accounts
+                .Include(x => x.TournamentAccounts)
+                    .ThenInclude(x => x.Tournament)
+                .Where(x => x.Id == accountId)
+                .FirstOrDefaultAsync();
 
             if(account == null)
             {
-                string error = $"Account not found";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
-                return tournamentResult;
+                errors.Add(AccountErrors.NotFound((Guid)accountId));
+                return (Result.Failure(errors), null);
             }
 
             //Check if the Account already is admin for another tournament
-            bool anyTournament = await _context.Tournaments
-                .Where(x => x.AdminId == accountId && x.IsActive)
-                .AnyAsync();
+            bool anyTournament = account.TournamentAccounts.Where(x => x.Tournament.AdminId == x.Id && x.Tournament.IsActive).Any();
 
             if(anyTournament)
             {
-                string error = "This account is already admin for an active tournament";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
-                return tournamentResult;
+                errors.Add(TournamentErrors.DuplicateAdmin((Guid)accountId));
+                return (Result.Failure(errors), null);
             }
+
+            Tournament tournament = new Tournament();
 
             try
             {
@@ -368,7 +361,6 @@ namespace office_tournament_api.Services
                 adminTourneyAccount.MatchesWon = 0;
                 adminTourneyAccount.MatchesPlayed = 0;
 
-                Tournament tournament = new Tournament();
                 tournament.Admin = adminTourneyAccount;
                 tournament.Title = dtoTournament.Title;
                 tournament.ResetInterval = dtoTournament.ResetInterval;
@@ -382,16 +374,14 @@ namespace office_tournament_api.Services
                 tournament.AdminId = adminTourneyAccount.Id;
                 await _context.SaveChangesAsync();
             }
-            catch(DbUpdateException e)
+            catch(Exception e)
             {
-                string error = $"Insert of Tournament failed during save. Message: {e.Message}. InnerException: {e.InnerException}";
-                tournamentResult.IsValid = false;
-                tournamentResult.Errors.Add(error);
+                string error = $"Insert of Tournament failed during database save. Message: {e.Message}";
+                errors.Add(TournamentErrors.DatabaseSaveFailure(error));
+                return (Result.Failure(errors), null);
             }
 
-            string success = "A new Tournament was created";
-            tournamentResult.SucessMessage = success;
-            return tournamentResult;
+            return (Result.Success(), tournament);
         }
     }
 }

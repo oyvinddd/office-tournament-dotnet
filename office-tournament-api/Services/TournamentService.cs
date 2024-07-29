@@ -31,15 +31,30 @@ namespace office_tournament_api.Services
             return dtoTournaments;
         }
 
-        public async Task<TournamentAccount?> GetAdmin(Guid tournamentId)
+        public async Task<(Result, TournamentAccount?)> GetAdmin(Guid tournamentId)
         {
-            TournamentAccount? admin = await _context.TournamentAccounts.Where(x => x.AdminTournamentId == tournamentId).FirstOrDefaultAsync();
+            List<Error> errors = new List<Error>();
             Tournament? tournament = await _context.Tournaments
                 .Include(x => x.Admin)
-                .Where(x => x.Admin.Id == admin.Id)
+                    .ThenInclude(x => x.Account)
+                .Where(x => x.Id == tournamentId)
                 .FirstOrDefaultAsync();
 
-            return admin;
+            if (tournament == null)
+            {
+                errors.Add(TournamentErrors.NoActiveTournament());
+                return (Result.Failure(errors), null);
+            }
+
+            TournamentAccount? admin = await _context.TournamentAccounts.Where(x => x.AdminTournamentId == tournamentId).FirstOrDefaultAsync();
+
+            if (admin == null)
+            {
+                errors.Add(TournamentErrors.NoAdminFound(tournamentId));
+                return (Result.Failure(errors), null);
+            }
+
+            return (Result.Success(), admin);
         }
 
         public async Task<(Result, Tournament?)> GetActiveTournamentForAccount(HttpContext httpContext)

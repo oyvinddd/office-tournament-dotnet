@@ -9,7 +9,7 @@ namespace office_tournament_api.Services
     {
         Task<List<DTOTournamentResponse>> SearchTournaments(string query);
         Task<(Result, Tournament?)> GetTournament(Guid id);
-        Task<TournamentAccount?> GetAdmin(Guid tournamentId);
+        Task<(Result, TournamentAccount?)> GetAdmin(Guid tournamentId);
         Task<(Result, Tournament?)> GetActiveTournamentForAccount(HttpContext httpContext);
         Task<Result> JoinTournament(HttpContext httpContext, Guid tournamentId, DTOAccountJoinRequest joinInfo);
         Task<Result> LeaveTournament(HttpContext httpContext, Guid tournamentId);

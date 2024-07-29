@@ -13,6 +13,11 @@ namespace office_tournament_api.ErrorHandling
             return Error.NotFound("Tournaments.NoActiveTournament", "No active tournament was found for the current Account");
         }
 
+        public static Error NoAdminFound(Guid tournamentId)
+        {
+            return Error.NotFound("Tournaments.NoAdminFound", $"No admin TournamentAccount was found for Tournament with id '{tournamentId}'");
+        }
+
         public static Error AlreadyJoined()
         {
             return Error.Validation("Tournaments.AlreadyJoined", "This account is already a participant of this Tournament");

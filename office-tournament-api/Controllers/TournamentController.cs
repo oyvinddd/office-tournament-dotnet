@@ -94,13 +94,14 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentAccount? admin = await _tournamentService.GetAdmin(tournamentId);
+                (Result result, TournamentAccount? admin) = await _tournamentService.GetAdmin(tournamentId);
 
-                if (admin == null)
+                if (result.IsFailure)
                 {
-                    string error = $"No admin was found for this tournament";
-                    return NotFound(error);
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
                 }
+
                 DTOTournamentAccountResponse dtoAdmin = _mapper.TournamentAccountDbToDto(admin);
                 return Ok(dtoAdmin);
             }

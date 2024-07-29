@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using office_tournament_api.DTOs;
+using office_tournament_api.ErrorHandling;
 using office_tournament_api.Helpers;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Validators;
@@ -24,16 +25,18 @@ namespace office_tournament_api.Services
         /// <param name="httpContext"></param>
         /// <param name="dtoMatch"></param>
         /// <returns></returns>
-        public async Task<TournamentResult> CreateMatch(HttpContext httpContext, DTOMatchRequest dtoMatch)
+        public async Task<(Result, string?)> CreateMatch(HttpContext httpContext, DTOMatchRequest dtoMatch)
         {
+            List<Error> errors = new List<Error>();
             TournamentResult result = new TournamentResult(true, new List<string>(), "");
+            bool isValid = true;
             Guid? accountId = JwtTokenHandler.GetIdFromToken(httpContext);
 
             if (accountId == null)
             {
                 string error = "There was an error parsing AccountId from token";
-                result.IsValid = false;
-                result.Errors.Add(error);
+                errors.Add(ApplicationErrors.ParseError());
+                isValid = false;
             }
 
             Tournament? tournament = await _context.Tournaments.FindAsync(dtoMatch.TournamentId);
@@ -41,9 +44,12 @@ namespace office_tournament_api.Services
             if (tournament == null)
             {
                 string error = $"Tournament with id = {dtoMatch.TournamentId} was not found";
-                result.IsValid = false;
-                result.Errors.Add(error);
+                errors.Add(TournamentErrors.NotFound(dtoMatch.TournamentId));
+                isValid = false;
             }
+
+            if (!isValid)
+                return (Result.Failure(errors), null);
 
             Account? account = await _context.Accounts
                 .Include(x => x.TournamentAccounts.Where(x => x.AccountId == accountId && x.TournamentId == dtoMatch.TournamentId))
@@ -52,42 +58,35 @@ namespace office_tournament_api.Services
             if (account == null)
             {
                 string error = $"Account with id = {accountId} was not found";
-                result.IsValid = false;
-                result.Errors.Add(error);
+                errors.Add(AccountErrors.NotFound((Guid)accountId));
+                return (Result.Failure(errors), null);
             }
 
             TournamentAccount? tournamentAccountUser = account.TournamentAccounts.FirstOrDefault();
 
             if(tournamentAccountUser == null)
             {
-                string error = $"TournamentAccount for Account with id = {accountId} and Tournament with id = {dtoMatch.TournamentId} was not found";
-                result.IsValid = false;
-                result.Errors.Add(error);
-            }
-            
+                errors.Add(TournamentAccountErrors.NotFoundByTournamentAndAccount(dtoMatch.TournamentId, (Guid)accountId));
+                return (Result.Failure(errors), null);
+            }   
 
             Account? opponentAccount = await _context.Accounts
                 .Include(x => x.TournamentAccounts.Where(x => x.AccountId == dtoMatch.OpponentId && x.TournamentId == dtoMatch.TournamentId))
                 .FirstOrDefaultAsync();
 
-            if (account == null)
+            if (opponentAccount == null)
             {
-                string error = $"Opponent Account with id = {dtoMatch.OpponentId} was not found";
-                result.IsValid = false;
-                result.Errors.Add(error);
+                errors.Add(MatchErrors.NotFoundOpponentAccount(dtoMatch.OpponentId));
+                return (Result.Failure(errors), null);
             }
 
             TournamentAccount? oppTournamentAccount = account.TournamentAccounts.FirstOrDefault();
 
             if (oppTournamentAccount == null)
             {
-                string error = $"Opponent TournamentAccount for Account with id = {dtoMatch.OpponentId} and Tournament with id = {dtoMatch.TournamentId} was not found";
-                result.IsValid = false;
-                result.Errors.Add(error);
+                errors.Add(MatchErrors.NotFoundOpponentTournamentAccount(dtoMatch.OpponentId, dtoMatch.TournamentId));
+                return (Result.Failure(errors), null);
             }
-
-            if (!result.IsValid)
-                return result;
 
             EloRatingResult eloRatingResult = _eloRating.CalculateEloRating(tournamentAccountUser.Score, oppTournamentAccount.Score, true);
 
@@ -117,11 +116,12 @@ namespace office_tournament_api.Services
             catch(DbUpdateException e)
             {
                 string error = $"Insert of Match failed during save to database. Message: {e.Message}. InnerException: {e.InnerException}";
-                result.IsValid = false;
-                result.Errors.Add(error);
+                errors.Add(MatchErrors.DatabaseSaveFailure(error));
+                return (Result.Failure(errors), null);
             }
 
-            return result;
+            string message = "A new Match was created";
+            return (Result.Success(), message);
         }
     }
 }

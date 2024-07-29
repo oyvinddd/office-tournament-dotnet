@@ -45,8 +45,9 @@ namespace office_tournament_api.Controllers
             }
             catch (Exception ex)
             {
-                string error = $"SearchTournaments failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error> 
+                    { TournamentErrors.SearchTournamentError(ex.Message, ex.InnerException.ToString()) }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
 
@@ -76,8 +77,9 @@ namespace office_tournament_api.Controllers
             }
             catch (Exception ex)
             {
-                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error> 
+                    { TournamentErrors.GetTournamentError(ex.Message, ex.InnerException.ToString()) }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
 
@@ -107,8 +109,9 @@ namespace office_tournament_api.Controllers
             }
             catch (Exception ex)
             {
-                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
 
@@ -137,8 +140,9 @@ namespace office_tournament_api.Controllers
             }
             catch (Exception ex)
             {
-                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
 
@@ -169,8 +173,9 @@ namespace office_tournament_api.Controllers
             }
             catch (Exception ex)
             {
-                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
 
@@ -201,8 +206,9 @@ namespace office_tournament_api.Controllers
             }
             catch (Exception ex)
             {
-                string error = $"JoinTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
 
@@ -232,8 +238,9 @@ namespace office_tournament_api.Controllers
             }
             catch (Exception ex)
             {
-                string error = $"ResetTournaments failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
 
@@ -263,8 +270,9 @@ namespace office_tournament_api.Controllers
             }
             catch (Exception ex)
             {
-                string error = $"CreateTournament failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
     }

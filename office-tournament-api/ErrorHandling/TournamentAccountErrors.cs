@@ -12,7 +12,7 @@ namespace office_tournament_api.ErrorHandling
 
         public static Error NotFoundByTournamentAndAccount(Guid tournamentId, Guid accountId )
         {
-            return Error.NotFound("TournamentAccounts.NotFound", $"No TournamentAccount was found for Account with id '{accountId}' and Tournament with id '{tournamentId}'");
+            return Error.NotFound("TournamentAccounts.NotFoundByTournamentAndAccount", $"No TournamentAccount was found for Account with id '{accountId}' and Tournament with id '{tournamentId}'");
         }
 
         public static Error ExistingUsername()

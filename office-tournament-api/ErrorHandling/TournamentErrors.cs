@@ -1,4 +1,5 @@
 ﻿using System.Net.NetworkInformation;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace office_tournament_api.ErrorHandling
 {
@@ -41,6 +42,26 @@ namespace office_tournament_api.ErrorHandling
         public static Error DuplicateAdmin(Guid accountId)
         {
             return Error.Validation("Tournaments.DuplicateAdmin", $"Account with id '{accountId}' is already admin for an active tournament");
+        }
+
+        public static Error SearchTournamentError(string message, string innerException)
+        {
+            return Error.Failure("Tournaments.SearchTournamentError", $"SearchTournament failed. Message: {message}. InnerException: {innerException}";);
+        }
+
+        public static Error GetTournamentError(string message, string innerException)
+        {
+            return Error.Failure("Tournaments.GetTournamentError", $"GetTournament failed. Message: {message}. InnerException: {innerException}";);
+        }
+
+        public static Error GetAdminError(string message, string innerException)
+        {
+            return Error.Failure("Tournaments.GetAdminError", $"GetAdmin failed. Message: {message}. InnerException: {innerException}";);
+        }
+
+        public static Error GetActiveTournamentForAccountError(string message, string innerException)
+        {
+            return Error.Failure("Tournaments.GetActiveTournamentForAccountError", $"GetActiveTournamentForAccount failed. Message: {message}. InnerException: {innerException}");
         }
 
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using office_tournament_api.DTOs;
+using office_tournament_api.ErrorHandling;
 using office_tournament_api.office_tournament_db;
 using office_tournament_api.Services;
 using office_tournament_api.Validators;
@@ -36,12 +37,15 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                TournamentResult validationResult = await _matchService.CreateMatch(HttpContext, dtoMatch);
+                (Result result, string? message) = await _matchService.CreateMatch(HttpContext, dtoMatch);
 
-                if (!validationResult.IsValid)
-                    return BadRequest(validationResult.Errors);
+                if (result.IsFailure)
+                {
+                    ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
+                    return StatusCode((int)problemDetails.Status, problemDetails);
+                }
 
-                return Created("CreateMatch", "");
+                return Created("CreateMatch", message);
             }
             catch (Exception ex)
             {

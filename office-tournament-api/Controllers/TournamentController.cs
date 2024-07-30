@@ -34,7 +34,7 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpGet("search/{query}")]
         [ProducesResponseType(typeof(List<DTOTournamentResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<DTOTournamentResponse>>> SearchTournaments(string query)
         {
             try
@@ -59,7 +59,7 @@ namespace office_tournament_api.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(DTOAccountResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOTournamentResponse>> GetTournament(Guid id)
         {
             try
@@ -90,8 +90,8 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpGet("admin")]
         [ProducesResponseType(typeof(DTOTournamentAccountResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<TournamentAccount?>> GetAdmin(Guid tournamentId)
         {
             try
@@ -121,8 +121,8 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpGet("active")]
         [ProducesResponseType(typeof(DTOTournamentResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOTournamentResponse>> GetActiveTournamentForAccount()
         {
             try
@@ -141,7 +141,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.GetActiveTournamentForAccountError(ex.Message, ex.InnerException.ToString()) }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -154,9 +154,9 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpPut("leave/{tournamentId}")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> LeaveTournament(Guid tournamentId)
         {
             try
@@ -174,7 +174,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.LeaveTournamentError(ex.Message, ex.InnerException.ToString()) }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -187,9 +187,9 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpPut("join/{tournamentId}")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> JoinTournament(Guid tournamentId, DTOAccountJoinRequest joinInfo)
         {
             try
@@ -207,7 +207,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.JoinTournamentError(ex.Message, ex.InnerException.ToString()) }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -219,9 +219,9 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpGet("reset")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<string>> ResetTournaments()
         {
             try
@@ -239,7 +239,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.ResetTournamentsError(ex.Message, ex.InnerException.ToString()) }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -251,9 +251,9 @@ namespace office_tournament_api.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(string), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<string>> CreateTournament(DTOTournamentRequest dtoTournament)
         {
             try

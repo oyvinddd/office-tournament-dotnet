@@ -46,17 +46,17 @@ namespace office_tournament_api.ErrorHandling
 
         public static Error SearchTournamentError(string message, string innerException)
         {
-            return Error.Failure("Tournaments.SearchTournamentError", $"SearchTournament failed. Message: {message}. InnerException: {innerException}";);
+            return Error.Failure("Tournaments.SearchTournamentError", $"SearchTournament failed. Message: {message}. InnerException: {innerException}");
         }
 
         public static Error GetTournamentError(string message, string innerException)
         {
-            return Error.Failure("Tournaments.GetTournamentError", $"GetTournament failed. Message: {message}. InnerException: {innerException}";);
+            return Error.Failure("Tournaments.GetTournamentError", $"GetTournament failed. Message: {message}. InnerException: {innerException}");
         }
 
         public static Error GetAdminError(string message, string innerException)
         {
-            return Error.Failure("Tournaments.GetAdminError", $"GetAdmin failed. Message: {message}. InnerException: {innerException}";);
+            return Error.Failure("Tournaments.GetAdminError", $"GetAdmin failed. Message: {message}. InnerException: {innerException}");
         }
 
         public static Error GetActiveTournamentForAccountError(string message, string innerException)
@@ -64,6 +64,24 @@ namespace office_tournament_api.ErrorHandling
             return Error.Failure("Tournaments.GetActiveTournamentForAccountError", $"GetActiveTournamentForAccount failed. Message: {message}. InnerException: {innerException}");
         }
 
+        public static Error LeaveTournamentError(string message, string innerException)
+        {
+            return Error.Failure("Tournaments.LeaveTournamentError", $"LeaveTournament failed. Message: {message}. InnerException: {innerException}");
+        }
 
+        public static Error JoinTournamentError(string message, string innerException)
+        {
+            return Error.Failure("Tournaments.JoinTournamentError", $"JoinTournament failed. Message: {message}. InnerException: {innerException}");
+        }
+
+        public static Error ResetTournamentsError(string message, string innerException)
+        {
+            return Error.Failure("Tournaments.ResetTournamentsError", $"ResetTournaments failed. Message: {message}. InnerException: {innerException}");
+        }
+
+        public static Error CreateTournamentError(string message, string innerException)
+        {
+            return Error.Failure("Tournaments.CreateTournamentError", $"CreateTournament failed. Message: {message}. InnerException: {innerException}");
+        }
     }
 }

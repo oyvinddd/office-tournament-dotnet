@@ -35,7 +35,7 @@ namespace office_tournament_api.Controllers
         [HttpPost("login")]
         [ProducesResponseType(typeof(DTOAccountInfoResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOAccountInfoResponse>> Login(DTOAccountLoginRequest accountLogin)
         {
             try
@@ -45,15 +45,16 @@ namespace office_tournament_api.Controllers
                 if (result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 return Ok(dtoAccountInfo);
             }
             catch (Exception ex)
             {
-                string error = $"Login failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { AccountErrors.LoginFailedError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         } 
 
@@ -65,7 +66,7 @@ namespace office_tournament_api.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(DTOAccountResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [Authorize]
         public async Task<ActionResult<DTOAccountResponse>> GetAccount(Guid id)
         {
@@ -76,14 +77,15 @@ namespace office_tournament_api.Controllers
                 if(result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 return Ok(dtoAccount);
             }catch (Exception ex)
             {
-                string error = $"GetAccount failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { AccountErrors.GetAccountError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
 
@@ -95,7 +97,7 @@ namespace office_tournament_api.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(DTOAccountInfoResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DTOAccountInfoResponse>> CreateAccount(DTOAccountRequest dtoAccount)
         {
             try
@@ -105,14 +107,15 @@ namespace office_tournament_api.Controllers
                 if(result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
                 return Created("CreateAccount", dtoAccountInfo);
             }
             catch (Exception ex)
             {
-                string error = $"CreateAccount failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { AccountErrors.CreateAccountError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
     }

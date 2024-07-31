@@ -51,5 +51,27 @@
 
             return newError;
         }
+
+        public static Error LoginFailedError(string message, string innerException)
+        {
+            Error newError = Error.Failure("Accounts.InvalidPassword", $"Login failed. Message: {message}. InnerException: {innerException}");
+
+            return newError;
+        }
+
+        public static Error GetAccountError(string message, string innerException)
+        {
+            Error newError = Error.Failure("Accounts.GetAccountError", $"GetAccount failed. Message: {message}. InnerException: {innerException}");
+
+            return newError;
+        }
+
+        public static Error CreateAccountError(string message, string innerException)
+        {
+            Error newError = Error.Failure("Accounts.CreateAccountError", $"CreateAccount failed. Message: {message}. InnerException: {innerException}");
+
+            return newError;
+        }
+
     }
 }

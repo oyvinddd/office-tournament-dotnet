@@ -42,15 +42,16 @@ namespace office_tournament_api.Controllers
                 if (result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 return Created("CreateMatch", message);
             }
             catch (Exception ex)
             {
-                string error = $"CreateMatch failed. Message: {ex.Message}. InnerException: {ex.InnerException}";
-                return StatusCode((int)StatusCodes.Status500InternalServerError, error);
+                ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
+                    { MatchErrors.CreateMatchFailure(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
+                return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
     }

@@ -41,14 +41,14 @@ namespace office_tournament_api.Controllers
                 if (result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
                 return Created("CreateAccount", true);
             }
             catch (Exception e)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error> { PushTokenErrors.CreatePushTokenFailure(e.Message) }));
-                return StatusCode((int)problemDetails.Status, problemDetails);
+                return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
             }
         } 
     }

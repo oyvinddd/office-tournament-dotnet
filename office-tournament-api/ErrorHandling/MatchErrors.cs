@@ -18,5 +18,10 @@ namespace office_tournament_api.ErrorHandling
         {
             return Error.Failure("Matches.DatabaseSaveFailure", message);
         }
+
+        public static Error CreateMatchFailure(string message, string innerException)
+        {
+            return Error.Failure("Matches.CreateMatchFailure", $"CreateMatch failed. Message: {message}. InnerException: {innerException}");
+        }
     }
 }

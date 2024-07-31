@@ -46,7 +46,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error> 
-                    { TournamentErrors.SearchTournamentError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.SearchTournamentError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -69,7 +69,7 @@ namespace office_tournament_api.Controllers
                 if (result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournament);
@@ -78,7 +78,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error> 
-                    { TournamentErrors.GetTournamentError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.GetTournamentError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -101,7 +101,7 @@ namespace office_tournament_api.Controllers
                 if (result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 DTOTournamentAccountResponse dtoAdmin = _mapper.TournamentAccountDbToDto(admin);
@@ -110,7 +110,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -127,12 +127,12 @@ namespace office_tournament_api.Controllers
         {
             try
             {
-                (Result result, Tournament tournament) = await _tournamentService.GetActiveTournamentForAccount(HttpContext);
+                (Result result, Tournament? tournament) = await _tournamentService.GetActiveTournamentForAccount(HttpContext);
 
                 if(result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 DTOTournamentResponse dtoTournament = _mapper.TournamentDbToDto(tournament);
@@ -141,7 +141,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.GetActiveTournamentForAccountError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.GetActiveTournamentForAccountError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -166,7 +166,7 @@ namespace office_tournament_api.Controllers
                 if (result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 return Ok();
@@ -174,7 +174,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.LeaveTournamentError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.LeaveTournamentError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -199,7 +199,7 @@ namespace office_tournament_api.Controllers
                 if (result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 return Ok();
@@ -207,7 +207,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.JoinTournamentError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.JoinTournamentError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -231,7 +231,7 @@ namespace office_tournament_api.Controllers
                 if (result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 return Ok();
@@ -239,7 +239,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.ResetTournamentsError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.ResetTournamentsError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
@@ -263,7 +263,7 @@ namespace office_tournament_api.Controllers
                 if (result.IsFailure)
                 {
                     ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(result);
-                    return StatusCode((int)problemDetails.Status, problemDetails);
+                    return StatusCode(problemDetails.Status != null ? (int)problemDetails.Status : StatusCodes.Status400BadRequest, problemDetails);
                 }
 
                 return Created("CreateTournament", tournament.Code);
@@ -271,7 +271,7 @@ namespace office_tournament_api.Controllers
             catch (Exception ex)
             {
                 ProblemDetails problemDetails = ResultExtensions.ToProblemDetails(Result.Failure(new List<Error>
-                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException.ToString()) }));
+                    { TournamentErrors.GetAdminError(ex.Message, ex.InnerException != null ? ex.InnerException.ToString() : "") }));
                 return StatusCode((int)StatusCodes.Status500InternalServerError, problemDetails);
             }
         }
